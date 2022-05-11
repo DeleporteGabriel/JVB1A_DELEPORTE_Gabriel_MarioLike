@@ -23,11 +23,14 @@ class sceneTest extends Phaser.Scene{
         preload(){
             this.load.image('MarcelIdle', 'assets/Marcel idle.png');
             this.load.image('plateformeTest', 'assets/plateforme test.png')
+            this.load.image('background', 'assets/fond de fou.png')
         }
 
         create(){
 
             this.cursors = this.input.keyboard.createCursorKeys();
+
+            this.add.image(4096+80, 2304+46, 'background').setScale(2.2);
 
             this.plateformes = this.physics.add.staticGroup();
             this.plateformes.create(800, 4000, 'plateformeTest').setSize(600, 500);
@@ -44,7 +47,7 @@ class sceneTest extends Phaser.Scene{
 
             this.cameras.main.zoom = 0.15;
 
-            this.cameras.main.setBounds(0, 0, 2000, 2000);
+            this.cameras.main.setBounds(0, 0, 1920, 1080);
             this.cameras.main.startFollow(this.player);
             
         };
@@ -75,7 +78,7 @@ var config = {
         default: 'arcade',
         arcade: {
         gravity: { y: 8000 },
-        debug: false
+        debug: true
         }},
         scene: [sceneTest]
         };
