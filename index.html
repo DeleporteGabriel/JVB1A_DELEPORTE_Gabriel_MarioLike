@@ -24,30 +24,42 @@ class sceneTest extends Phaser.Scene{
             this.load.image('MarcelIdle', 'assets/Marcel idle.png');
             this.load.image('plateformeTest', 'assets/plateforme test.png')
             this.load.image('background', 'assets/fond de fou.png')
+
+            //collisions tiled
+            this.load.image("Phaser_Collision", "assets/600x600.png");
+            this.load.tilemapTiledJSON("carte", "assets/tiled_collision.json");
         }
 
         create(){
 
+            //COLLISIONS//
+            const carteDuNiveau = this.add.tilemap("carte");
+
+            // importer TileSet 
+            const tileset = carteDuNiveau.addTilesetImage(
+                    "600x600",
+                    "Phaser_Collision"
+                    );                    
+
+            //plateformes.visible = false;
+
+            //PLAYER//
             this.cursors = this.input.keyboard.createCursorKeys();
 
-            this.add.image(4096+80, 2304+46, 'background').setScale(2.2);
+            this.add.image(610, 410, 'background');
 
-            this.plateformes = this.physics.add.staticGroup();
-            this.plateformes.create(800, 4000, 'plateformeTest').setSize(600, 500);
-            this.plateformes.create(1400, 4000, 'plateformeTest').setSize(600, 500);
-            this.plateformes.create(2000, 4000, 'plateformeTest').setSize(600, 500);
-            this.plateformes.create(200, 4000, 'plateformeTest').setSize(600, 500);
-            this.plateformes.create(2600, 4000, 'plateformeTest').setSize(600, 500);
-            this.plateformes.create(3200, 4000, 'plateformeTest').setSize(600, 500);
-            this.plateformes.create(3800, 4000, 'plateformeTest').setSize(600, 500);
-            this.plateformes.create(4400, 4000, 'plateformeTest').setSize(600, 500);
+            this.player = this.physics.add.sprite(1000, 80, 'MarcelIdle');
 
-            this.player = this.physics.add.sprite(800, 800, 'MarcelIdle');
-            this.physics.add.collider(this.player, this.plateformes);
+            this.wallGroupe = this.physics.add.staticGroup()
+            this.wallGroupe.enableBody = true;
+
+            carteDuNiveau.createFromObjects('layer_collisions', 2, "Phaser_Collision", 0, true, false, this.wallGroupe);
+
+            this.physics.add.collider(this.player, this.wallGroupe);
 
             this.cameras.main.zoom = 0.15;
 
-            this.cameras.main.setBounds(0, 0, 1920, 1080);
+            //this.cameras.main.setBounds(0, 0, 1920, 1080);
             this.cameras.main.startFollow(this.player);
             
         };
@@ -55,11 +67,11 @@ class sceneTest extends Phaser.Scene{
         update(){
 
             if (this.cursors.left.isDown){ //si la touche gauche est appuyée
-                this.player.setVelocityX(-2000); //alors vitesse négative en X
+                this.player.setVelocityX(-800); //alors vitesse négative en X
             }
 
             else if (this.cursors.right.isDown){ //sinon si la touche droite est appuyée
-                this.player.setVelocityX(2000); //alors vitesse positive en X
+                this.player.setVelocityX(800); //alors vitesse positive en X
             }
 
             else{ // sinon
@@ -69,17 +81,17 @@ class sceneTest extends Phaser.Scene{
         };
 }
 
-
-
 var config = {
         type: Phaser.AUTO,
         width: 1280, height: 720,
         physics: {
         default: 'arcade',
         arcade: {
-        gravity: { y: 8000 },
-        debug: true
+        gravity: { y: 4000 },
+        debug: false
         }},
+        pixelArt: true,
+        roundPixels: true,
         scene: [sceneTest]
         };
 

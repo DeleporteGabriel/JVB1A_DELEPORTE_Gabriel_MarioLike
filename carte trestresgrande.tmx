@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="4098" height="2304" tilewidth="1" tileheight="1" infinite="0" nextlayerid="4" nextobjectid="9">
+ <editorsettings>
+  <export target="assets/tiled_collision.json" format="json"/>
+ </editorsettings>
+ <tileset firstgid="1" name="600x600" tilewidth="1" tileheight="1" tilecount="1" columns="1">
+  <image source="assets/600x600.png" width="1" height="1"/>
+  <tile id="0">
+   <properties>
+    <property name="collision" type="bool" value="true"/>
+   </properties>
+  </tile>
+ </tileset>
+ <imagelayer id="2" name="background">
+  <image source="assets/fond de fou.png" width="4096" height="2304"/>
+ </imagelayer>
+ <objectgroup id="3" name="layer_collisions" opacity="0.5" offsetx="-148" offsety="132">
+  <object id="6" gid="1" x="98" y="2261" width="4277.67" height="210.333"/>
+  <object id="7" gid="1" x="-34.835" y="2106.83" width="249.67" height="2322.33"/>
+  <object id="8" gid="1" x="4171.16" y="2144.84" width="249.67" height="2338.33"/>
+ </objectgroup>
+</map>
