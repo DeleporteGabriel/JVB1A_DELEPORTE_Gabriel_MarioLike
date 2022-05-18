@@ -21,45 +21,45 @@ class sceneTest extends Phaser.Scene{
     }
 
         preload(){
-            this.load.image('MarcelIdle', 'assets/Marcel idle.png');
+            this.load.image('MarcelIdle', 'assets/Marcel idle2.png');
             this.load.image('plateformeTest', 'assets/plateforme test.png')
             this.load.image('background', 'assets/fond de fou.png')
 
             //collisions tiled
-            this.load.image("Phaser_Collision", "assets/600x600.png");
-            this.load.tilemapTiledJSON("carte", "assets/tiled_collision.json");
+            this.load.image("Phaser_Collision", "assets/tileset_chambord.png");
+            this.load.tilemapTiledJSON("carte", "assets/tiled_export.json");
         }
 
         create(){
+
+            this.add.image(2000, 1100, 'background');
 
             //COLLISIONS//
             const carteDuNiveau = this.add.tilemap("carte");
 
             // importer TileSet 
             const tileset = carteDuNiveau.addTilesetImage(
-                    "600x600",
+                    "tileset_chambord",
                     "Phaser_Collision"
                     );                    
 
-            //plateformes.visible = false;
+            const wallGroupe = carteDuNiveau.createLayer(
+                    "layer_walls",
+                    tileset
+                );
 
             //PLAYER//
             this.cursors = this.input.keyboard.createCursorKeys();
 
-            this.add.image(610, 410, 'background');
+            this.player = this.physics.add.sprite(2000, 100, 'MarcelIdle');
 
-            this.player = this.physics.add.sprite(1000, 80, 'MarcelIdle');
+            this.physics.world.setFPS(120);
+            wallGroupe.setCollisionByProperty({ solide: true });
+            this.physics.add.collider(this.player, wallGroupe);
 
-            this.wallGroupe = this.physics.add.staticGroup()
-            this.wallGroupe.enableBody = true;
+            this.cameras.main.zoom = 0.2;
 
-            carteDuNiveau.createFromObjects('layer_collisions', 2, "Phaser_Collision", 0, true, false, this.wallGroupe);
-
-            this.physics.add.collider(this.player, this.wallGroupe);
-
-            this.cameras.main.zoom = 0.15;
-
-            //this.cameras.main.setBounds(0, 0, 1920, 1080);
+            this.cameras.main.setBounds(0, 0, 1920, 1080);
             this.cameras.main.startFollow(this.player);
             
         };
@@ -67,11 +67,11 @@ class sceneTest extends Phaser.Scene{
         update(){
 
             if (this.cursors.left.isDown){ //si la touche gauche est appuyée
-                this.player.setVelocityX(-800); //alors vitesse négative en X
+                this.player.setVelocityX(-1200); //alors vitesse négative en X
             }
 
             else if (this.cursors.right.isDown){ //sinon si la touche droite est appuyée
-                this.player.setVelocityX(800); //alors vitesse positive en X
+                this.player.setVelocityX(1200); //alors vitesse positive en X
             }
 
             else{ // sinon
@@ -87,7 +87,7 @@ var config = {
         physics: {
         default: 'arcade',
         arcade: {
-        gravity: { y: 4000 },
+        gravity: { y: 2000 },
         debug: false
         }},
         pixelArt: true,
