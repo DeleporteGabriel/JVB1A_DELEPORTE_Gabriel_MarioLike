@@ -24,6 +24,8 @@ class sceneTest extends Phaser.Scene{
             this.load.image('MarcelIdle', 'assets/Marcel idle2.png');
             this.load.image('plateformeTest', 'assets/plateforme test.png')
             this.load.image('background', 'assets/fond de fou.png')
+            this.load.spritesheet('marcel_walk', 'assets/Marcel run left.png',
+            { frameWidth: 600, frameHeight: 600 });
 
             //collisions tiled
             this.load.image("Phaser_Collision", "assets/tileset_chambord.png");
@@ -53,6 +55,14 @@ class sceneTest extends Phaser.Scene{
 
             this.player = this.physics.add.sprite(2000, 100, 'MarcelIdle');
 
+            //animation
+            this.anims.create({
+                key: 'MarcelLeftRun',
+                frames: this.anims.generateFrameNumbers('marcel_walk', {start:0,end:3}),
+                frameRate: 10,
+                repeat: -1
+            });
+
             this.physics.world.setFPS(120);
             wallGroupe.setCollisionByProperty({ solide: true });
             this.physics.add.collider(this.player, wallGroupe);
@@ -68,14 +78,19 @@ class sceneTest extends Phaser.Scene{
 
             if (this.cursors.left.isDown){ //si la touche gauche est appuyée
                 this.player.setVelocityX(-1200); //alors vitesse négative en X
+                this.player.anims.play('MarcelLeftRun', true);
+                this.player.flipX = false;
             }
 
             else if (this.cursors.right.isDown){ //sinon si la touche droite est appuyée
                 this.player.setVelocityX(1200); //alors vitesse positive en X
+                this.player.anims.play('MarcelLeftRun', true);
+                this.player.flipX = true;
             }
 
             else{ // sinon
                 this.player.setVelocityX(0); //vitesse nulle
+                this.player.setTexture('MarcelIdle');
             }
             
         };
