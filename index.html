@@ -34,11 +34,12 @@ class sceneTest extends Phaser.Scene{
             //collisions tiled
             this.load.image("Phaser_Collision", "assets/tileset_chambord.png");
             this.load.tilemapTiledJSON("carte", "assets/tiled_export.json");
+            this.load.image('image_fond', 'assets/fond complet.png')
         }
 
         create(){
 
-            this.add.image(2000, 1100, 'background');
+            this.add.image(6000, 4500, 'image_fond');
 
             //COLLISIONS//
             const carteDuNiveau = this.add.tilemap("carte");
@@ -48,7 +49,6 @@ class sceneTest extends Phaser.Scene{
                     "tileset_chambord",
                     "Phaser_Collision"
                     );                    
-
             const wallGroupe = carteDuNiveau.createLayer(
                     "layer_walls",
                     tileset
@@ -85,7 +85,7 @@ class sceneTest extends Phaser.Scene{
 
             this.cameras.main.zoom = 0.2;
 
-            this.cameras.main.setBounds(0, 0, 16000, 11080);
+            this.cameras.main.setBounds(0, 0, 12000, 9000);
             this.cameras.main.startFollow(this.player);
 
             //MECHANT
