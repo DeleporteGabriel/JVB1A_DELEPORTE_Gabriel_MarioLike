@@ -49,11 +49,17 @@ class sceneTest extends Phaser.Scene{
                     "layer_walls",
                     tileset
                 );
+            const wallDeco = carteDuNiveau.createLayer(
+                    "layer_deco",
+                    tileset
+                );
 
             //PLAYER//
             this.cursors = this.input.keyboard.createCursorKeys();
 
             this.player = this.physics.add.sprite(2000, 100, 'MarcelIdle');
+            this.player.setSize(350, 550)
+            this.player.setOffset(125, 50)  
 
             //animation
             this.anims.create({
@@ -69,21 +75,24 @@ class sceneTest extends Phaser.Scene{
 
             this.cameras.main.zoom = 0.2;
 
-            this.cameras.main.setBounds(0, 0, 1920, 1080);
+            this.cameras.main.setBounds(0, 0, 16000, 11080);
             this.cameras.main.startFollow(this.player);
             
         };
 
         update(){
 
+            if ((this.cursors.up.isDown) && this.player.body.blocked.down ) {
+                this.player.setVelocityY(-2000);
+            }  
             if (this.cursors.left.isDown){ //si la touche gauche est appuyée
-                this.player.setVelocityX(-1200); //alors vitesse négative en X
+                this.player.setVelocityX(-1500); //alors vitesse négative en X
                 this.player.anims.play('MarcelLeftRun', true);
                 this.player.flipX = false;
             }
 
             else if (this.cursors.right.isDown){ //sinon si la touche droite est appuyée
-                this.player.setVelocityX(1200); //alors vitesse positive en X
+                this.player.setVelocityX(1500); //alors vitesse positive en X
                 this.player.anims.play('MarcelLeftRun', true);
                 this.player.flipX = true;
             }
