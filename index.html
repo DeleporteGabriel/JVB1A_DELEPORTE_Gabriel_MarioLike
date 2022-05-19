@@ -30,6 +30,8 @@ class sceneTest extends Phaser.Scene{
             this.load.image('background', 'assets/fond de fou.png');
             this.load.spritesheet('marcel_walk', 'assets/Marcel run left.png',
             { frameWidth: 600, frameHeight: 600 });
+            this.load.spritesheet('marcel_eyeattack', 'assets/Marcel FireBlast.png',
+            { frameWidth: 600, frameHeight: 600 });
 
             //ennemy
             this.load.image('francois', 'assets/placeholder_mechant.png');
@@ -56,10 +58,6 @@ class sceneTest extends Phaser.Scene{
                     "layer_walls",
                     tileset
                 );
-            /*const wallJump = carteDuNiveau.createLayer(
-                    "layer_jump",
-                    tileset
-                );*/
             const wallDeco = carteDuNiveau.createLayer(
                     "layer_deco",
                     tileset
@@ -68,11 +66,8 @@ class sceneTest extends Phaser.Scene{
                     "layer_fire",
                     tileset
                 );
-            //wallJump.visible = false;
             wallGroupe.setCollisionByProperty({ solide: true });
             wallFire.setCollisionByProperty({ solide: true });
-
-            //Game.finder = new EasyStar.js();
 
             //PLAYER//
             this.cursors = this.input.keyboard.createCursorKeys();
@@ -81,6 +76,8 @@ class sceneTest extends Phaser.Scene{
             this.player.setSize(350, 550)
             this.player.setOffset(125, 50)  
 
+            this.attaquePlayer = false;
+
             //animation
             this.anims.create({
                 key: 'MarcelLeftRun',
@@ -88,8 +85,14 @@ class sceneTest extends Phaser.Scene{
                 frameRate: 10,
                 repeat: -1
             });
+            this.anims.create({
+                key: 'MarcelAttak',
+                frames: this.anims.generateFrameNumbers('marcel_eyeattack', {start:0,end:2}),
+                frameRate: 5,
+                repeat: -1
+            });
 
-            this.physics.world.setFPS(240);
+            this.physics.world.setFPS(300);
             this.physics.add.collider(this.player, wallGroupe);
 
             this.cameras.main.zoom = 0.2;
@@ -99,35 +102,38 @@ class sceneTest extends Phaser.Scene{
 
             //MECHANT
             this.ennemy = this.physics.add.sprite(4000, 100, 'francois');
-            this.timerTP = 0;
             this.timerAttaque = 0;
             this.timerDash = 0;
-            //this.physics.add.collider(this.ennemy, wallJump, function ennemyJump(ennemy, blocs){ennemy.setVelocityY(-2500);});
+
             this.physics.add.collider(this.ennemy, wallGroupe);
             this.physics.add.collider(this.ennemy, wallFire);
+    
             
         };
 
         update(){
             //CONTROLE MARCEL//
-            if ((this.cursors.up.isDown) && this.player.body.blocked.down ) {
-                this.player.setVelocityY(-3000);
-            }  
-            if (this.cursors.left.isDown){ //si la touche gauche est appuyée
-                this.player.setVelocityX(-1800); //alors vitesse négative en X
-                this.player.anims.play('MarcelLeftRun', true);
-                this.player.flipX = false;
-            }
 
-            else if (this.cursors.right.isDown){ //sinon si la touche droite est appuyée
-                this.player.setVelocityX(1800); //alors vitesse positive en X
-                this.player.anims.play('MarcelLeftRun', true);
-                this.player.flipX = true;
-            }
+            if (this.attaquePlayer = false) {
+                if ((this.cursors.up.isDown) && (this.player.body.blocked.down)) {
+                    this.player.setVelocityY(-3000);
+                }  
+                if (this.cursors.left.isDown){ //si la touche gauche est appuyée
+                    this.player.setVelocityX(-1800); //alors vitesse négative en X
+                    this.player.anims.play('MarcelLeftRun', true);
+                    this.player.flipX = false;
+                }
 
-            else{ // sinon
-                this.player.setVelocityX(0); //vitesse nulle
-                this.player.setTexture('MarcelIdle');
+                else if (this.cursors.right.isDown){ //sinon si la touche droite est appuyée
+                    this.player.setVelocityX(1800); //alors vitesse positive en X
+                    this.player.anims.play('MarcelLeftRun', true);
+                    this.player.flipX = true;
+                }
+
+                else{ // sinon
+                    this.player.setVelocityX(0); //vitesse nulle
+                    this.player.setTexture('MarcelIdle');
+                }
             }
 
             //MECHANT PATTERN
@@ -155,7 +161,7 @@ class sceneTest extends Phaser.Scene{
                     else {this.ennemy.setVelocityX(0); this.timerAttaque++;}
                 }
             }
-            if (this.timerAttaque >= 100) {
+            if (this.timerAttaque >= 20) {
                 this.timerAttaque = 0;
                 this.timerDash++;
                 if (this.ennemy.x < this.player.x) {
@@ -172,19 +178,16 @@ class sceneTest extends Phaser.Scene{
                     this.ennemy.setVelocityX(0);
                 }
             }
-            if ((this.ennemy.y > this.player.y + 100) || (this.ennemy.y < this.player.y - 100)) {
-                this.timerTP++;
-            } else {this.timerTP--;;}
-            if (this.timerTP >= 200) {
-                this.ennemy.y = this.player.y - 200;
-                this.ennemy.x = this.player.x - 100;
-                this.timerTP = 0;
+
+            if ((this.ennemy.body.blocked.right) || (this.ennemy.body.blocked.left)) {
+                this.ennemy.setVelocityY(-2000);
             }
+
         };
 }
 
 var config = {
-        type: Phaser.AUTO,
+        type: Phaser.CANVA,
         width: 1280, height: 720,
         physics: {
         default: 'arcade',
