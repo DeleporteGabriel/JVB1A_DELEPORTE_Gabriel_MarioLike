@@ -29,6 +29,7 @@ class sceneTest extends Phaser.Scene{
             this.load.image('plateformeTest', 'assets/plateforme test.png');
             this.load.image('background', 'assets/fond de fou.png');
             this.load.image('fireblast', 'assets/le FEU.png')
+            this.load.image('grosFeu', 'assets/FEU.png')
             this.load.spritesheet('marcel_walk', 'assets/Marcel run left.png',
             { frameWidth: 600, frameHeight: 600 });
             this.load.spritesheet('marcel_eyeattack', 'assets/Marcel FireBlast.png',
@@ -96,7 +97,18 @@ class sceneTest extends Phaser.Scene{
                 repeat: -1
             });
 
+            //FEU
             this.fired = this.physics.add.group();
+            this.firedGround = this.physics.add.group();
+
+            function firedCreate(fire, wall) {
+                fire.destroy();
+                this.grosFeu = this.firedGround.create(fire.x, fire.y - 150, 'grosFeu');
+                this.grosFeu.health = 100;
+            }
+
+            this.physics.add.collider(this.fired, this.wallGroupe, firedCreate, null, this);
+            this.physics.add.collider(this.firedGround, this.wallGroupe);
 
             this.physics.world.setFPS(300);
             this.physics.add.collider(this.player, this.wallGroupe);
@@ -111,8 +123,21 @@ class sceneTest extends Phaser.Scene{
             this.timerAttaque = 0;
             this.timerDash = 0;
 
+            this.AUFEU = false;
+            this.timerFeu = 0;
+            this.fuiteFeu = 0;
+
             this.physics.add.collider(this.ennemy, this.wallGroupe);
             this.physics.add.collider(this.ennemy, wallFire);
+
+            function OFEU(ennemy, feu) {
+                this.AUFEU = true;
+                if (ennemy.x <= feu.x) {this.fuiteFeu = 1;}
+                else if (ennemy.x > feu.x) {this.fuiteFeu = 2;}
+                else {this.fuiteFeu = 0;}
+            }
+
+            this.physics.add.overlap(this.ennemy, this.firedGround, OFEU, null, this);
     
             
         };
@@ -176,8 +201,19 @@ class sceneTest extends Phaser.Scene{
                 this.player.setVelocityX(0);
                 this.timerAttack++;
                 if (this.timerAttack == 10) {
-                    this.feu = this.fired.create(this.player.x - 100, this.player.y - 100, 'fireblast');
-                    this.feu.setVelocityX(-4000);
+                if (this.cursors.down.isDown) {
+                    this.feu = this.fired.create(this.player.x, this.player.y - 100, 'fireblast');
+                        this.feu.setVelocityY(4000);
+                }
+                else {
+                    if (this.player.flipX == false) {
+                        this.feu = this.fired.create(this.player.x - 100, this.player.y - 100, 'fireblast');
+                        this.feu.setVelocityX(-4000);
+                    } else {
+                        this.feu = this.fired.create(this.player.x + 100, this.player.y - 100, 'fireblast');
+                        this.feu.setVelocityX(4000);
+                    }
+                }
                 }
                 if (this.timerAttack >= 40) {
                     this.attaquePlayer = false;
@@ -185,7 +221,17 @@ class sceneTest extends Phaser.Scene{
                 }
             }
 
+            //FEU
+            this.firedGround.children.each(function(feu) {
+                feu.health -= 1;
+                if (feu.health < 40) {feu.alpha -= 0.05;}
+                if (feu.health <= 0) {
+                    feu.destroy();
+                }
+            }, this);
+
             //MECHANT PATTERN
+            if (this.AUFEU == false) {
             if (this.timerDash == 0) {
                 if ((this.ennemy.y > this.player.y + 100) || (this.ennemy.y < this.player.y - 100)) {
                     if ((this.ennemy.x < this.player.x)) {
@@ -230,6 +276,13 @@ class sceneTest extends Phaser.Scene{
 
             if ((this.ennemy.body.blocked.right) || (this.ennemy.body.blocked.left)) {
                 this.ennemy.setVelocityY(-2000);
+            }
+            } else {
+                this.timerFeu++;
+                if (this.timerFeu >= 100) {this.timerFeu = 0; this.AUFEU = false; this.fuiteFeu = 0;}
+
+                if (this.fuiteFeu == 1) {this.ennemy.setVelocityX(-4000);}
+                else if (this.fuiteFeu == 2) {this.ennemy.setVelocityX(4000);}
             }
 
         };
