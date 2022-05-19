@@ -28,8 +28,11 @@ class sceneTest extends Phaser.Scene{
             this.load.image('MarcelIdle', 'assets/Marcel idle2.png');
             this.load.image('plateformeTest', 'assets/plateforme test.png');
             this.load.image('background', 'assets/fond de fou.png');
+
             this.load.image('fireblast', 'assets/le FEU.png')
             this.load.image('grosFeu', 'assets/FEU.png')
+            this.load.image('jaugeFeu', 'assets/leFEU3.png')
+
             this.load.spritesheet('marcel_walk', 'assets/Marcel run left.png',
             { frameWidth: 600, frameHeight: 600 });
             this.load.spritesheet('marcel_eyeattack', 'assets/Marcel FireBlast.png',
@@ -100,6 +103,12 @@ class sceneTest extends Phaser.Scene{
             //FEU
             this.fired = this.physics.add.group();
             this.firedGround = this.physics.add.group();
+            this.flameDispo = 0;
+
+            this.flameJauge = this.physics.add.sprite(-2000, -1000, 'jaugeFeu');
+            this.flameJauge.body.allowGravity = false;
+            this.flameJauge.body.stop()
+            this.flameJauge.setScrollFactor(0);
 
             function firedCreate(fire, wall) {
                 fire.destroy();
@@ -119,7 +128,7 @@ class sceneTest extends Phaser.Scene{
             this.cameras.main.startFollow(this.player);
 
             //MECHANT
-            this.ennemy = this.physics.add.sprite(4000, 100, 'francois');
+            this.ennemy = this.physics.add.sprite(12000, 100, 'francois');
             this.timerAttaque = 0;
             this.timerDash = 0;
 
@@ -192,7 +201,8 @@ class sceneTest extends Phaser.Scene{
                     }
                 }
 
-                if (this.cursors.space.isDown) {
+                if ((this.cursors.space.isDown) && (this.flameDispo == 0)) {
+                    this.flameDispo++;
                     this.attaquePlayer = true;
                     this.player.anims.play({ key: 'MarcelAttak', startFrame: 0 }, true);
                 }
@@ -222,6 +232,15 @@ class sceneTest extends Phaser.Scene{
             }
 
             //FEU
+            if (this.flameDispo != 0) {
+                this.flameDispo++;
+                this.flameJauge.alpha = this.flameDispo/200;
+                if (this.flameDispo >= 150) {
+                    this.flameDispo = 0;
+                    this.flameJauge.alpha = 1;
+                }
+            }
+
             this.firedGround.children.each(function(feu) {
                 feu.health -= 1;
                 if (feu.health < 40) {feu.alpha -= 0.05;}
@@ -273,16 +292,15 @@ class sceneTest extends Phaser.Scene{
                     this.ennemy.setVelocityX(0);
                 }
             }
-
-            if ((this.ennemy.body.blocked.right) || (this.ennemy.body.blocked.left)) {
-                this.ennemy.setVelocityY(-2000);
-            }
             } else {
                 this.timerFeu++;
-                if (this.timerFeu >= 100) {this.timerFeu = 0; this.AUFEU = false; this.fuiteFeu = 0;}
+                if (this.timerFeu >= 50) {this.timerFeu = 0; this.AUFEU = false; this.fuiteFeu = 0;}
 
                 if (this.fuiteFeu == 1) {this.ennemy.setVelocityX(-4000);}
                 else if (this.fuiteFeu == 2) {this.ennemy.setVelocityX(4000);}
+            }
+            if ((this.ennemy.body.blocked.right) || (this.ennemy.body.blocked.left)) {
+                this.ennemy.setVelocityY(-2000);
             }
 
         };
