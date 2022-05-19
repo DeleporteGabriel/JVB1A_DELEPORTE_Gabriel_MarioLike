@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" /><title>Mon 3eme jeu Phaser</title>
-    <script src="//cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js">
+    <script src="phaser.min.js">
+
     </script>
-    <script src="bin/phaser_pathfinding-0.2.0.js">
 
     </script>
 
@@ -56,17 +56,21 @@ class sceneTest extends Phaser.Scene{
                     "layer_walls",
                     tileset
                 );
-            const wallJump = carteDuNiveau.createLayer(
+            /*const wallJump = carteDuNiveau.createLayer(
                     "layer_jump",
                     tileset
-                );
+                );*/
             const wallDeco = carteDuNiveau.createLayer(
                     "layer_deco",
                     tileset
                 );
-            wallJump.visible = false;
+            const wallFire = carteDuNiveau.createLayer(
+                    "layer_fire",
+                    tileset
+                );
+            //wallJump.visible = false;
             wallGroupe.setCollisionByProperty({ solide: true });
-            wallJump.setCollisionByProperty({ solide: true });
+            wallFire.setCollisionByProperty({ solide: true });
 
             //Game.finder = new EasyStar.js();
 
@@ -95,8 +99,12 @@ class sceneTest extends Phaser.Scene{
 
             //MECHANT
             this.ennemy = this.physics.add.sprite(4000, 100, 'francois');
+            this.timerTP = 0;
+            this.timerAttaque = 0;
+            this.timerDash = 0;
             //this.physics.add.collider(this.ennemy, wallJump, function ennemyJump(ennemy, blocs){ennemy.setVelocityY(-2500);});
             this.physics.add.collider(this.ennemy, wallGroupe);
+            this.physics.add.collider(this.ennemy, wallFire);
             
         };
 
@@ -106,13 +114,13 @@ class sceneTest extends Phaser.Scene{
                 this.player.setVelocityY(-3000);
             }  
             if (this.cursors.left.isDown){ //si la touche gauche est appuyée
-                this.player.setVelocityX(-1500); //alors vitesse négative en X
+                this.player.setVelocityX(-1800); //alors vitesse négative en X
                 this.player.anims.play('MarcelLeftRun', true);
                 this.player.flipX = false;
             }
 
             else if (this.cursors.right.isDown){ //sinon si la touche droite est appuyée
-                this.player.setVelocityX(1500); //alors vitesse positive en X
+                this.player.setVelocityX(1800); //alors vitesse positive en X
                 this.player.anims.play('MarcelLeftRun', true);
                 this.player.flipX = true;
             }
@@ -123,15 +131,54 @@ class sceneTest extends Phaser.Scene{
             }
 
             //MECHANT PATTERN
-
-            if (this.ennemy.x < this.player.x) {
-                this.ennemy.setVelocityX(800);
+            if (this.timerDash == 0) {
+                if ((this.ennemy.y > this.player.y + 100) || (this.ennemy.y < this.player.y - 100)) {
+                    if ((this.ennemy.x < this.player.x)) {
+                        this.ennemy.setVelocityX(800);
+                        this.timerAttaque = 0;
+                    }
+                    else if ((this.ennemy.x > this.player.x)) {
+                        this.ennemy.setVelocityX(-800);
+                        this.timerAttaque = 0;
+                    }
+                    else {this.ennemy.setVelocityX(0); this.timerAttaque++;}
+                }
+                else {                
+                    if ((this.ennemy.x < this.player.x - 600)) {
+                        this.ennemy.setVelocityX(800);
+                        this.timerAttaque = 0;
+                    }
+                    else if ((this.ennemy.x > this.player.x + 600)) {
+                        this.ennemy.setVelocityX(-800);
+                        this.timerAttaque = 0;
+                    }
+                    else {this.ennemy.setVelocityX(0); this.timerAttaque++;}
+                }
             }
-            else if (this.ennemy.x > this.player.x) {
-                this.ennemy.setVelocityX(-800);
+            if (this.timerAttaque >= 100) {
+                this.timerAttaque = 0;
+                this.timerDash++;
+                if (this.ennemy.x < this.player.x) {
+                    this.ennemy.setVelocityX(3000);
+                }
+                else if (this.ennemy.x > this.player.x) {
+                    this.ennemy.setVelocityX(-3000);
+                }
             }
-            if ((this.ennemy.y > this.player.y) && (this.ennemy.body.blocked.down)) {
-                this.ennemy.setVelocityY(-2500);
+            if (this.timerDash != 0) {
+                this.timerDash++;
+                if (this.timerDash >= 25) {
+                    this.timerDash = 0;
+                    this.ennemy.setVelocityX(0);
+                }
+            }
+            if ((this.ennemy.y > this.player.y + 100) || (this.ennemy.y < this.player.y - 100)) {
+                this.timerTP++;
+            } else {this.timerTP--;;}
+            if (this.timerTP >= 200) {
+                this.ennemy.y = this.player.y - 200;
+                this.ennemy.x = this.player.x - 100;
+                this.timerTP = 0;
             }
         };
 }
@@ -142,7 +189,7 @@ var config = {
         physics: {
         default: 'arcade',
         arcade: {
-        gravity: { y: 3500 },
+        gravity: { y: 4000 },
         debug: false
         }},
         pixelArt: true,
