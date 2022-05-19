@@ -28,6 +28,7 @@ class sceneTest extends Phaser.Scene{
             this.load.image('MarcelIdle', 'assets/Marcel idle2.png');
             this.load.image('plateformeTest', 'assets/plateforme test.png');
             this.load.image('background', 'assets/fond de fou.png');
+            this.load.image('fireblast', 'assets/le FEU.png')
             this.load.spritesheet('marcel_walk', 'assets/Marcel run left.png',
             { frameWidth: 600, frameHeight: 600 });
             this.load.spritesheet('marcel_eyeattack', 'assets/Marcel FireBlast.png',
@@ -54,7 +55,7 @@ class sceneTest extends Phaser.Scene{
                     "tileset_chambord",
                     "Phaser_Collision"
                     );                    
-            const wallGroupe = carteDuNiveau.createLayer(
+            this.wallGroupe = carteDuNiveau.createLayer(
                     "layer_walls",
                     tileset
                 );
@@ -66,7 +67,7 @@ class sceneTest extends Phaser.Scene{
                     "layer_fire",
                     tileset
                 );
-            wallGroupe.setCollisionByProperty({ solide: true });
+            this.wallGroupe.setCollisionByProperty({ solide: true });
             wallFire.setCollisionByProperty({ solide: true });
 
             //PLAYER//
@@ -75,8 +76,11 @@ class sceneTest extends Phaser.Scene{
             this.player = this.physics.add.sprite(2000, 100, 'MarcelIdle');
             this.player.setSize(350, 550)
             this.player.setOffset(125, 50)  
+            this.player.body.setMaxVelocity(9999, 4000);
 
             this.attaquePlayer = false;
+            this.timerAttack = 0;
+            this.doubleJump = true;
 
             //animation
             this.anims.create({
@@ -87,13 +91,15 @@ class sceneTest extends Phaser.Scene{
             });
             this.anims.create({
                 key: 'MarcelAttak',
-                frames: this.anims.generateFrameNumbers('marcel_eyeattack', {start:0,end:2}),
+                frames: this.anims.generateFrameNumbers('marcel_eyeattack', {start:0,end:3}),
                 frameRate: 5,
                 repeat: -1
             });
 
+            this.fired = this.physics.add.group();
+
             this.physics.world.setFPS(300);
-            this.physics.add.collider(this.player, wallGroupe);
+            this.physics.add.collider(this.player, this.wallGroupe);
 
             this.cameras.main.zoom = 0.2;
 
@@ -105,34 +111,77 @@ class sceneTest extends Phaser.Scene{
             this.timerAttaque = 0;
             this.timerDash = 0;
 
-            this.physics.add.collider(this.ennemy, wallGroupe);
+            this.physics.add.collider(this.ennemy, this.wallGroupe);
             this.physics.add.collider(this.ennemy, wallFire);
     
             
         };
 
-        update(){
-            //CONTROLE MARCEL//
+        update(time, delta){
+            super.update(time, delta);
 
-            if (this.attaquePlayer = false) {
-                if ((this.cursors.up.isDown) && (this.player.body.blocked.down)) {
-                    this.player.setVelocityY(-3000);
+            //CONTROLE MARCEL//
+            this.jump = Phaser.Input.Keyboard.JustDown(this.cursors.up);
+
+            if (this.attaquePlayer == false) {
+                if (this.player.body.blocked.down) {
+                    this.doubleJump = true;
+                }
+                if (this.jump)
+                {   
+                    if (this.player.body.blocked.down) {
+                        this.player.setVelocityY(-3000);
+                    }
+                    else if (this.doubleJump == true) {
+                        this.player.setVelocityY(-3000);
+                        this.doubleJump = false;
+                    }
                 }  
                 if (this.cursors.left.isDown){ //si la touche gauche est appuyée
                     this.player.setVelocityX(-1800); //alors vitesse négative en X
                     this.player.anims.play('MarcelLeftRun', true);
                     this.player.flipX = false;
                 }
-
                 else if (this.cursors.right.isDown){ //sinon si la touche droite est appuyée
                     this.player.setVelocityX(1800); //alors vitesse positive en X
                     this.player.anims.play('MarcelLeftRun', true);
                     this.player.flipX = true;
                 }
-
                 else{ // sinon
                     this.player.setVelocityX(0); //vitesse nulle
                     this.player.setTexture('MarcelIdle');
+                }
+
+                if (this.player.body.blocked.right) {
+                    //this.player.x += 20;
+                    this.tile = this.wallGroupe.getTileAtWorldXY(this.player.x + 300, this.player.y - 300, true);
+                    if (this.tile.index == -1){
+                        this.player.body.y -= 150;
+                    }
+                }
+                if (this.player.body.blocked.left) {
+                    //this.player.x -= 20;
+                    this.tile = this.wallGroupe.getTileAtWorldXY(this.player.x - 300, this.player.y - 300, true);
+                    if (this.tile.index == -1){
+                        this.player.body.y -= 150;;
+                    }
+                }
+
+                if (this.cursors.space.isDown) {
+                    this.attaquePlayer = true;
+                    this.player.anims.play({ key: 'MarcelAttak', startFrame: 0 }, true);
+                }
+            }
+            else {
+                this.player.setVelocityX(0);
+                this.timerAttack++;
+                if (this.timerAttack == 10) {
+                    this.feu = this.fired.create(this.player.x - 100, this.player.y - 100, 'fireblast');
+                    this.feu.setVelocityX(-4000);
+                }
+                if (this.timerAttack >= 40) {
+                    this.attaquePlayer = false;
+                    this.timerAttack = 0;
                 }
             }
 
@@ -192,7 +241,7 @@ var config = {
         physics: {
         default: 'arcade',
         arcade: {
-        gravity: { y: 4000 },
+        gravity: { y: 10000 },
         debug: false
         }},
         pixelArt: true,
