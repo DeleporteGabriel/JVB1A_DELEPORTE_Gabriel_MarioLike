@@ -24,6 +24,13 @@ class sceneTest extends Phaser.Scene{
     }
 
         preload(){
+
+            //vies 
+            this.load.image('Vie3', 'assets/sel plein.png');
+            this.load.image('Vie2', 'assets/sel moitié plein.png');
+            this.load.image('Vie1', 'assets/sel moitié vide.png');
+            this.load.image('Vie0', 'assets/sel vide.png');
+
             //marcel
             this.load.image('MarcelIdle', 'assets/Marcel idle2.png');
             this.load.image('plateformeTest', 'assets/plateforme test.png');
@@ -49,9 +56,26 @@ class sceneTest extends Phaser.Scene{
             this.load.image("Phaser_Collision", "assets/tileset_chambord.png");
             this.load.tilemapTiledJSON("carte", "assets/tiled_export.json");
             this.load.image('image_fond', 'assets/fond complet.png')
+
+            //rickroll
+            this.load.spritesheet('Rickroll_spritesheet', 'assets/rickroll spritesheet.png',
+            { frameWidth: 498, frameHeight: 373 });
         }
 
         create(){
+            //rickroll
+            this.anims.create({
+                key: 'rickroll',
+                frames: this.anims.generateFrameNumbers('Rickroll_spritesheet', {start:0,end:89}),
+                frameRate: 24,
+                repeat: -1
+            });
+
+            this.rickroll = this.physics.add.sprite(5000, 11000, 'Rickroll_spritesheet');
+            this.rickroll.body.allowGravity = false;
+            this.rickroll.body.stop();
+            this.rickroll.anims.play('rickroll', true);
+            this.rickroll.setScale(2);
 
             this.add.image(6000, 4500, 'image_fond');
 
@@ -111,12 +135,20 @@ class sceneTest extends Phaser.Scene{
                 repeat: -1
             });
 
+            //VIE
+            this.imageVie = this.add.image(-2200, -1000, 'Vie3');
+            this.imageVie.setScrollFactor(0);
+            this.pointCoeur = 3;
+
+            this.Iframe = 0;
+
+
             //FEU
             this.fired = this.physics.add.group();
             this.firedGround = this.physics.add.group();
             this.flameDispo = 0;
 
-            this.flameJauge = this.physics.add.sprite(-2000, -1000, 'jaugeFeu');
+            this.flameJauge = this.physics.add.sprite(-1600, -1000, 'jaugeFeu');
             this.flameJauge.body.allowGravity = false;
             this.flameJauge.body.stop()
             this.flameJauge.setScrollFactor(0);
@@ -135,7 +167,7 @@ class sceneTest extends Phaser.Scene{
 
             this.cameras.main.zoom = 0.2;
 
-            this.cameras.main.setBounds(0, 0, 12000, 9000);
+            this.cameras.main.setBounds(0, 0, 12000, 12000);
             this.cameras.main.startFollow(this.player);
 
             //MECHANT
@@ -158,13 +190,28 @@ class sceneTest extends Phaser.Scene{
                 else {this.fuiteFeu = 0;}
             }
 
-            this.physics.add.overlap(this.ennemy, this.firedGround, OFEU, null, this);
-    
-            
+            this.physics.add.overlap(this.ennemy, this.firedGround, OFEU, null, this);        
         };
 
         update(time, delta){
             super.update(time, delta);
+
+            //POINT DE VIES
+            if (this.pointCoeur == 3) {
+                this.imageVie.setTexture('Vie3');
+            } else if (this.pointCoeur == 2) {
+                this.imageVie.setTexture('Vie2');
+            } else if (this.pointCoeur == 1) {
+                this.imageVie.setTexture('Vie1');
+            } else {this.imageVie.setTexture('Vie0');}
+
+            if (this.Iframe != 0) {
+                this.Iframe++;
+                this.player.setTint(0xff8888);
+                if (this.Iframe >= 80) {
+                    this.Iframe = 0;
+                }
+            } else {this.player.setTint(0xffffff);}
 
             //CONTROLE MARCEL//
             this.jump = Phaser.Input.Keyboard.JustDown(this.cursors.up);
@@ -296,23 +343,23 @@ class sceneTest extends Phaser.Scene{
             if (this.timerDash == 0) {
                 if ((this.ennemy.y > this.player.y + 100) || (this.ennemy.y < this.player.y - 100)) {
                     if ((this.ennemy.x < this.player.x)) {
-                        this.ennemy.setVelocityX(800);
+                        this.ennemy.setVelocityX(1200);
                         this.timerAttaque = 0;
                     }
                     else if ((this.ennemy.x > this.player.x)) {
-                        this.ennemy.setVelocityX(-800);
+                        this.ennemy.setVelocityX(-1200);
                         this.timerAttaque = 0;
                     }
                     else {this.ennemy.setVelocityX(0); this.timerAttaque++;}
                 }
                 else {                
                     if ((this.ennemy.x < this.player.x - 600)) {
-                        this.ennemy.setVelocityX(800);
+                        this.ennemy.setVelocityX(1200);
                         this.dashEnnemyDirection = 0;
                         this.timerAttaque = 0;
                     }
                     else if ((this.ennemy.x > this.player.x + 600)) {
-                        this.ennemy.setVelocityX(-800);
+                        this.ennemy.setVelocityX(-1200);
                         this.dashEnnemyDirection = 1;
                         this.timerAttaque = 0;
                     }
@@ -340,6 +387,14 @@ class sceneTest extends Phaser.Scene{
                         this.dashEnnemyDirection = 0;
                     }
                 }
+
+                if ((this.fireDash == true) && (this.player.x > this.ennemy.x - 300) && (this.player.x < this.ennemy.x + 300)
+                && (this.player.y > this.ennemy.y - 300) && (this.player.y < this.ennemy.y + 300) && (this.Iframe == 0)) {
+                    this.pointCoeur -= 1;
+                    this.cameras.main.shake(100, 0.7);
+                    this.Iframe++;
+                }
+
             }
             } else {
                 this.timerFeu++;
