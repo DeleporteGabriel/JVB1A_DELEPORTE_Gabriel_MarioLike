@@ -34,7 +34,7 @@ class sceneTest extends Phaser.Scene{
             //marcel
             this.load.image('MarcelIdle', 'assets/Marcel idle2.png');
             this.load.image('plateformeTest', 'assets/plateforme test.png');
-            this.load.image('background', 'assets/fond de fou.png');
+            this.load.image('background', 'assets/fond tile.png');
 
             this.load.image('fireblast', 'assets/le FEU.png')
             this.load.image('grosFeu', 'assets/FEU.png')
@@ -48,6 +48,8 @@ class sceneTest extends Phaser.Scene{
             { frameWidth: 600, frameHeight: 600 });
             this.load.spritesheet('rouedefeu', 'assets/rouedefeu spritesheet cette fois.png',
             { frameWidth: 600, frameHeight: 600 });
+            this.load.spritesheet('marcel_kisaute', 'assets/Marcel qui saute.png',
+            { frameWidth: 600, frameHeight: 600 });
 
             //ennemy
             this.load.image('francois', 'assets/placeholder_mechant.png');
@@ -55,7 +57,7 @@ class sceneTest extends Phaser.Scene{
             //collisions tiled
             this.load.image("Phaser_Collision", "assets/tileset_chambord.png");
             this.load.tilemapTiledJSON("carte", "assets/tiled_export.json");
-            this.load.image('image_fond', 'assets/fond complet.png')
+            this.load.image('image_fond', 'assets/fond tile.png')
 
             //rickroll
             this.load.spritesheet('Rickroll_spritesheet', 'assets/rickroll spritesheet.png',
@@ -63,21 +65,12 @@ class sceneTest extends Phaser.Scene{
         }
 
         create(){
-            //rickroll
-            this.anims.create({
-                key: 'rickroll',
-                frames: this.anims.generateFrameNumbers('Rickroll_spritesheet', {start:0,end:89}),
-                frameRate: 24,
-                repeat: -1
-            });
-
-            this.rickroll = this.physics.add.sprite(5000, 11000, 'Rickroll_spritesheet');
-            this.rickroll.body.allowGravity = false;
-            this.rickroll.body.stop();
-            this.rickroll.anims.play('rickroll', true);
-            this.rickroll.setScale(2);
-
-            this.add.image(6000, 4500, 'image_fond');
+            for (this.i = 0; this.i < 3; this.i++){
+                for (this.j = 0; this.j < 3; this.j++){
+                    this.fond = this.add.image(6000*this.j, 4500*this.i, 'image_fond');
+                    this.fond.setScrollFactor(0.9);
+                }
+            }
 
             //COLLISIONS//
             const carteDuNiveau = this.add.tilemap("carte");
@@ -86,7 +79,11 @@ class sceneTest extends Phaser.Scene{
             const tileset = carteDuNiveau.addTilesetImage(
                     "tileset_chambord",
                     "Phaser_Collision"
-                    );                    
+                    );       
+            const FondDeco = carteDuNiveau.createLayer(
+                    "deco_fond",
+                    tileset
+                );             
             this.wallGroupe = carteDuNiveau.createLayer(
                     "layer_walls",
                     tileset
@@ -101,6 +98,7 @@ class sceneTest extends Phaser.Scene{
                 );
             this.wallGroupe.setCollisionByProperty({ solide: true });
             wallFire.setCollisionByProperty({ solide: true });
+            FondDeco.setScrollFactor(0.9);
 
             //PLAYER//
             this.cursors = this.input.keyboard.createCursorKeys();
@@ -131,6 +129,12 @@ class sceneTest extends Phaser.Scene{
             this.anims.create({
                 key: 'RoueFeu',
                 frames: this.anims.generateFrameNumbers('rouedefeu', {start:0,end:3}),
+                frameRate: 20,
+                repeat: -1
+            });
+            this.anims.create({
+                key: 'MarcelJump',
+                frames: this.anims.generateFrameNumbers('marcel_kisaute', {start:0,end:3}),
                 frameRate: 20,
                 repeat: -1
             });
@@ -190,7 +194,21 @@ class sceneTest extends Phaser.Scene{
                 else {this.fuiteFeu = 0;}
             }
 
-            this.physics.add.overlap(this.ennemy, this.firedGround, OFEU, null, this);        
+            this.physics.add.overlap(this.ennemy, this.firedGround, OFEU, null, this);   
+            
+            //rickroll
+            this.anims.create({
+                key: 'rickroll',
+                frames: this.anims.generateFrameNumbers('Rickroll_spritesheet', {start:0,end:89}),
+                frameRate: 24,
+                repeat: -1
+            });
+
+            this.rickroll = this.physics.add.sprite(5000, 11000, 'Rickroll_spritesheet');
+            this.rickroll.body.allowGravity = false;
+            this.rickroll.body.stop();
+            this.rickroll.anims.play('rickroll', true);
+            this.rickroll.setScale(4);
         };
 
         update(time, delta){
@@ -232,20 +250,21 @@ class sceneTest extends Phaser.Scene{
                         this.doubleJump = false;
                     }
                 } 
+                if (!this.player.body.blocked.down) {this.player.anims.play('MarcelJump', true);}
                 //déplacement droite gauche
                 if (this.cursors.left.isDown){ //si la touche gauche est appuyée
                     this.player.setVelocityX(-1800); //alors vitesse négative en X
-                    this.player.anims.play('MarcelLeftRun', true);
+                    if (this.player.body.blocked.down) {this.player.anims.play('MarcelLeftRun', true);}
                     this.player.flipX = false;
                 }
                 else if (this.cursors.right.isDown){ //sinon si la touche droite est appuyée
                     this.player.setVelocityX(1800); //alors vitesse positive en X
-                    this.player.anims.play('MarcelLeftRun', true);
+                    if (this.player.body.blocked.down) {this.player.anims.play('MarcelLeftRun', true);}
                     this.player.flipX = true;
                 }
                 else{ // sinon
                     this.player.setVelocityX(0); //vitesse nulle
-                    this.player.setTexture('MarcelIdle');
+                    if (this.player.body.blocked.down) {this.player.setTexture('MarcelIdle');}
                 }
                 //monter les rebords
                 if (this.player.body.blocked.right) {
@@ -253,13 +272,21 @@ class sceneTest extends Phaser.Scene{
                     this.tile = this.wallGroupe.getTileAtWorldXY(this.player.x + 300, this.player.y - 300, true);
                     if (this.tile.index == -1){
                         this.player.body.y -= 150;
+                        this.tile = this.wallGroupe.getTileAtWorldXY(this.player.x + 300, this.player.y, true);
+                        if (this.tile.index == -1){
+                            this.player.body.x += 30
+                        }
                     }
                 }
                 if (this.player.body.blocked.left) {
                     //this.player.x -= 20;
                     this.tile = this.wallGroupe.getTileAtWorldXY(this.player.x - 300, this.player.y - 300, true);
                     if (this.tile.index == -1){
-                        this.player.body.y -= 150;;
+                        this.player.body.y -= 150;
+                        this.tile = this.wallGroupe.getTileAtWorldXY(this.player.x - 300, this.player.y, true);
+                        if (this.tile.index == -1){
+                            this.player.body.x -= 30
+                        }
                     }
                 }
                 //attaquer
@@ -287,17 +314,17 @@ class sceneTest extends Phaser.Scene{
                 if (this.fireDash == true) {
                     //attaque lancer de feu
                     this.player.setVelocityX(0);
-                if (this.timerAttack == 10) {
+                if (this.timerAttack == 1) {
                 if (this.cursors.down.isDown) {
-                    this.feu = this.fired.create(this.player.x, this.player.y - 100, 'fireblast');
+                    this.feu = this.fired.create(this.player.x, this.player.y - 50, 'fireblast');
                         this.feu.setVelocityY(4000);
                 }
                 else {
                     if (this.player.flipX == false) {
-                        this.feu = this.fired.create(this.player.x - 100, this.player.y - 100, 'fireblast');
+                        this.feu = this.fired.create(this.player.x - 200, this.player.y - 50, 'fireblast');
                         this.feu.setVelocityX(-4000);
                     } else {
-                        this.feu = this.fired.create(this.player.x + 100, this.player.y - 100, 'fireblast');
+                        this.feu = this.fired.create(this.player.x + 200, this.player.y - 50, 'fireblast');
                         this.feu.setVelocityX(4000);
                     }
                 }
