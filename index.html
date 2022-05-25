@@ -66,7 +66,7 @@ class sceneTest extends Phaser.Scene{
 
         create(){
             for (this.i = 0; this.i < 3; this.i++){
-                for (this.j = 0; this.j < 3; this.j++){
+                for (this.j = 0; this.j < 6; this.j++){
                     this.fond = this.add.image(6000*this.j, 4500*this.i, 'image_fond');
                     this.fond.setScrollFactor(0.9);
                 }
@@ -104,6 +104,7 @@ class sceneTest extends Phaser.Scene{
             this.cursors = this.input.keyboard.createCursorKeys();
 
             this.player = this.physics.add.sprite(2000, 100, 'MarcelIdle');
+            this.player.setGravityY(10000);
             this.player.setSize(350, 550)
             this.player.setOffset(125, 50)  
             this.player.body.setMaxVelocity(9999, 4000);
@@ -112,6 +113,7 @@ class sceneTest extends Phaser.Scene{
             this.timerAttack = 0;
             this.doubleJump = true;
             this.fireDash = true;
+            this.grimpe = false;
 
             //animation
             this.anims.create({
@@ -169,13 +171,18 @@ class sceneTest extends Phaser.Scene{
             this.physics.world.setFPS(300);
             this.physics.add.collider(this.player, this.wallGroupe);
 
+
+            //CAMERA
             this.cameras.main.zoom = 0.2;
 
             this.cameras.main.setBounds(0, 0, 12000, 12000);
             this.cameras.main.startFollow(this.player);
 
             //MECHANT
-            this.ennemy = this.physics.add.sprite(12000, 100, 'francois');
+            this.ennemy = this.physics.add.sprite(21*300, 26*300, 'francois');
+            this.ennemy.setGravityY(10000);
+            this.ennemySide = 0;
+
             this.timerAttaque = 0;
             this.timerDash = 0;
             this.timerAttaque = 0;
@@ -214,6 +221,14 @@ class sceneTest extends Phaser.Scene{
         update(time, delta){
             super.update(time, delta);
 
+            //CAMERA
+            if (this.player.x < 12000) {
+                this.cameras.main.setBounds(0, 0, 12000, 12000);
+            }
+            else {
+                this.cameras.main.setBounds(12000, 0, 12000, 12000);
+            }
+
             //POINT DE VIES
             if (this.pointCoeur == 3) {
                 this.imageVie.setTexture('Vie3');
@@ -237,6 +252,7 @@ class sceneTest extends Phaser.Scene{
 
             if (this.attaquePlayer == false) {
                 if (this.player.body.blocked.down) {
+                    this.grimpe = false;
                     this.doubleJump = true;
                     this.fireDash = true;
                 }
@@ -250,7 +266,7 @@ class sceneTest extends Phaser.Scene{
                         this.doubleJump = false;
                     }
                 } 
-                if (!this.player.body.blocked.down) {this.player.anims.play('MarcelJump', true);}
+                if (!this.player.body.blocked.down) {if (this.grimpe == false) {this.player.anims.play('MarcelJump', true);}}
                 //déplacement droite gauche
                 if (this.cursors.left.isDown){ //si la touche gauche est appuyée
                     this.player.setVelocityX(-1800); //alors vitesse négative en X
@@ -272,10 +288,7 @@ class sceneTest extends Phaser.Scene{
                     this.tile = this.wallGroupe.getTileAtWorldXY(this.player.x + 300, this.player.y - 300, true);
                     if (this.tile.index == -1){
                         this.player.body.y -= 150;
-                        this.tile = this.wallGroupe.getTileAtWorldXY(this.player.x + 300, this.player.y, true);
-                        if (this.tile.index == -1){
-                            this.player.body.x += 30
-                        }
+                        this.grimpe = true;
                     }
                 }
                 if (this.player.body.blocked.left) {
@@ -283,10 +296,7 @@ class sceneTest extends Phaser.Scene{
                     this.tile = this.wallGroupe.getTileAtWorldXY(this.player.x - 300, this.player.y - 300, true);
                     if (this.tile.index == -1){
                         this.player.body.y -= 150;
-                        this.tile = this.wallGroupe.getTileAtWorldXY(this.player.x - 300, this.player.y, true);
-                        if (this.tile.index == -1){
-                            this.player.body.x -= 30
-                        }
+                        this.grimpe = true;
                     }
                 }
                 //attaquer
@@ -368,12 +378,34 @@ class sceneTest extends Phaser.Scene{
             //MECHANT PATTERN
             if (this.AUFEU == false) {
             if (this.timerDash == 0) {
+
+                if (this.ennemySide == 0 && (this.ennemy.y > this.player.y + 300)) {
+                    for (this.i = 0; this.i < 5; this.i++) {
+                    this.tile = this.wallGroupe.getTileAtWorldXY(this.ennemy.x, this.ennemy.y - 300*this.i, true);
+                    if (this.tile.index != -1){
+                        this.ennemySide = 1;
+                        this.ennemy.setGravityY(-10000);
+                        this.ennemy.flipY = true;
+                    }
+                }
+                }
+                if (this.ennemySide == 1 && (this.ennemy.y < this.player.y - 300)) {
+                    for (this.i = 0; this.i < 5; this.i++) {
+                    this.tile = this.wallGroupe.getTileAtWorldXY(this.ennemy.x, this.ennemy.y + 300*this.i, true);
+                    if (this.tile.index != -1){
+                        this.ennemySide = 0;
+                        this.ennemy.setGravityY(10000);
+                        this.ennemy.flipY = false;
+                    }
+                }
+                }
+
                 if ((this.ennemy.y > this.player.y + 100) || (this.ennemy.y < this.player.y - 100)) {
-                    if ((this.ennemy.x < this.player.x)) {
+                    if ((this.ennemy.x < this.player.x - 100)) {
                         this.ennemy.setVelocityX(1200);
                         this.timerAttaque = 0;
                     }
-                    else if ((this.ennemy.x > this.player.x)) {
+                    else if ((this.ennemy.x > this.player.x + 100)) {
                         this.ennemy.setVelocityX(-1200);
                         this.timerAttaque = 0;
                     }
@@ -392,6 +424,7 @@ class sceneTest extends Phaser.Scene{
                     }
                     else {this.ennemy.setVelocityX(0); this.timerAttaque++;}
                 }
+
             }
             if (this.timerAttaque >= 20) {
                 this.timerAttaque = 0;
@@ -431,7 +464,9 @@ class sceneTest extends Phaser.Scene{
                 else if (this.fuiteFeu == 2) {this.ennemy.setVelocityX(4000);}
             }
             if ((this.ennemy.body.blocked.right) || (this.ennemy.body.blocked.left)) {
-                this.ennemy.setVelocityY(-2000);
+                if (this.ennemySide == 0) {
+                    this.ennemy.setVelocityY(-2000);
+                } else {this.ennemy.setVelocityY(2000);}
             }
 
         };
@@ -443,7 +478,6 @@ var config = {
         physics: {
         default: 'arcade',
         arcade: {
-        gravity: { y: 10000 },
         debug: false
         }},
         pixelArt: true,
