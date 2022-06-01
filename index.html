@@ -60,6 +60,10 @@ class sceneTest extends Phaser.Scene{
             this.load.spritesheet('francois2', 'assets/francois1erSpritesheet.png',
             {frameWidth :300, frameHeight: 300});
 
+            //cheminees
+            this.load.image('chemineeEteinte', 'assets/chemineeeteinte.png');
+            this.load.image('chemineeAllumee', 'assets/chemineeallume.png');
+
             //collisions tiled
             this.load.image("Phaser_Collision", "assets/tileset_chambord.png");
             this.load.tilemapTiledJSON("carte", "assets/tiled_export.json");
@@ -106,9 +110,26 @@ class sceneTest extends Phaser.Scene{
                     "layer_fire",
                     tileset
                 );
+            this.wallTableau = carteDuNiveau.createLayer(
+                    "layer_tableau",
+                    tileset
+                );
             this.wallGroupe.setCollisionByProperty({ solide: true });
             wallFire.setCollisionByProperty({ solide: true });
+            this.wallTableau.visible = false;
             FondDeco.setScrollFactor(0.9);
+
+            //tableau
+
+            this.tableauEnnemis = this.physics.add.group()
+
+            carteDuNiveau.getObjectLayer('layer_spawnTableau').objects.forEach((tableauEnnemis) => {
+            this.tableau = this.tableauEnnemis.create(tableauEnnemis.x, tableauEnnemis.y, 'francoisTableauVert');
+            this.tableau.setVelocityX(1000);
+            });
+
+            //cheminée
+            this.chemineeDroite = this.physics.add.sprite(170*300, (23*300) + 150, 'chemineeEteinte');
 
             //PLAYER//
             this.cursors = this.input.keyboard.createCursorKeys();
@@ -186,6 +207,13 @@ class sceneTest extends Phaser.Scene{
             this.physics.add.collider(this.fired, this.wallGroupe, firedCreate, null, this);
             this.physics.add.collider(this.firedGround, this.wallGroupe);
 
+
+            function fireAllume(cheminee, fire) {
+                fire.destroy();
+                cheminee.setTexture('chemineeAllumee');
+            }
+            this.physics.add.collider(this.fired, this.chemineeDroite, fireAllume, null, this);
+
             this.physics.world.setFPS(300);
             this.physics.add.collider(this.player, this.wallGroupe);
 
@@ -223,9 +251,6 @@ class sceneTest extends Phaser.Scene{
             }
 
             this.physics.add.overlap(this.ennemy, this.firedGround, OFEU, null, this);
-            
-            //tableau
-            this.tableau = this.physics.add.sprite(176*300, 65*300, 'francoisTableauVert');
             
             //rickroll
             /*this.anims.create({
@@ -427,12 +452,12 @@ class sceneTest extends Phaser.Scene{
                 }
                 }
 
-                if ((this.ennemy.y > this.player.y + 100) || (this.ennemy.y < this.player.y - 100)) {
-                    if ((this.ennemy.x < this.player.x - 100)) {
+                if ((this.ennemy.y > this.player.y + 100) || (this.ennemy.y < this.player.y - 300)) {
+                    if ((this.ennemy.x < this.player.x - 300)) {
                         this.ennemy.setVelocityX(1200);
                         this.timerAttaque = 0;
                     }
-                    else if ((this.ennemy.x > this.player.x + 100)) {
+                    else if ((this.ennemy.x > this.player.x + 300)) {
                         this.ennemy.setVelocityX(-1200);
                         this.timerAttaque = 0;
                     }
@@ -497,15 +522,34 @@ class sceneTest extends Phaser.Scene{
             }
 
             //Tableaux
-            
-            if (Phaser.Math.Distance.BetweenPoints(this.player, this.tableau) < 1000) {
+
+
+            this.tableauEnnemis.children.each(function(enemy) {
+                this.tile = this.wallTableau.getTileAtWorldXY(enemy.x, enemy.y, true);
+                        if (this.tile.index != -1){
+                        if (enemy.body.velocity.x > 0) {
+                            enemy.x -= 50;
+                            enemy.setVelocityX(-1000);
+                        }
+                        else if (enemy.body.velocity.x < 0) {
+                            enemy.setVelocityX(1000);
+                            enemy.x += 50;
+                        }
+                }
+            if (Phaser.Math.Distance.BetweenPoints(this.player, enemy) < 1000) {
+                enemy.setTexture('francoisTableauRouge');
+
                 if (Phaser.Math.Distance.BetweenPoints(this.player, this.ennemy) > 2400)
                 {
-                    this.ennemy.x = this.tableau.x;
-                    this.ennemy.y = this.tableau.y;
+                    this.ennemy.x = enemy.x;
+                    this.ennemy.y = enemy.y;
+                    this.ennemy.ennemySide = 0;
+                    this.ennemy.setGravityY(5000);
+                    this.ennemy.setVelocityY(-3000);
+                    this.ennemy.flipY = false;
                 }
-
-            }
+            } else {enemy.setTexture('francoisTableauVert');}
+        }, this);
  
         };
 }
