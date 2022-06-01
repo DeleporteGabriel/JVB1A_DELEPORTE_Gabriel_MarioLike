@@ -53,6 +53,8 @@ class sceneTest extends Phaser.Scene{
 
             //ennemy
             this.load.image('francois', 'assets/placeholder_mechant.png');
+            this.load.spritesheet('francoisTP', 'assets/tpFrancois.png',
+            { frameWidth: 300, frameHeight: 300 });
 
             this.load.image('francoisTableauVert', 'assets/cadreVert.png');
             this.load.image('francoisTableauRouge', 'assets/cadreRouge.png');
@@ -90,6 +92,10 @@ class sceneTest extends Phaser.Scene{
                     "tileset_chambord",
                     "Phaser_Collision"
                     );       
+            const bababackground = carteDuNiveau.createLayer(
+                    "layer_background",
+                    tileset
+                );
             const FondDeco = carteDuNiveau.createLayer(
                     "deco_fond",
                     tileset
@@ -97,17 +103,17 @@ class sceneTest extends Phaser.Scene{
             const PremierDeco = carteDuNiveau.createLayer(
                     "deco_pasfond",
                     tileset
-                );   
+                ); 
+            const wallFire = carteDuNiveau.createLayer(
+                    "layer_fire",
+                    tileset
+                );
             this.wallGroupe = carteDuNiveau.createLayer(
                     "layer_walls",
                     tileset
                 );
             const wallDeco = carteDuNiveau.createLayer(
                     "layer_deco",
-                    tileset
-                );
-            const wallFire = carteDuNiveau.createLayer(
-                    "layer_fire",
                     tileset
                 );
             this.wallTableau = carteDuNiveau.createLayer(
@@ -135,7 +141,7 @@ class sceneTest extends Phaser.Scene{
             this.cursors = this.input.keyboard.createCursorKeys();
 
             //this.player = this.physics.add.sprite((6000*5) - 3000,  (6000*5) - 2000, 'MarcelIdle');
-            this.player = this.physics.add.sprite(168*300,  65*300, 'MarcelIdle');
+            this.player = this.physics.add.sprite(90*300,  98*300, 'MarcelIdle');
             this.player.setGravityY(10000);
             this.player.setSize(350, 550)
             this.player.setOffset(125, 50)  
@@ -146,6 +152,7 @@ class sceneTest extends Phaser.Scene{
             this.doubleJump = true;
             this.fireDash = true;
             this.grimpe = false;
+            this.rouedefeu = true;
 
             //animation
             this.anims.create({
@@ -176,6 +183,12 @@ class sceneTest extends Phaser.Scene{
             this.anims.create({
                 key: 'francoisMarche',
                 frames: this.anims.generateFrameNumbers('francois2', {start:0,end:1}),
+                frameRate: 10,
+                repeat: -1
+            });
+            this.anims.create({
+                key: 'francoisSeTP',
+                frames: this.anims.generateFrameNumbers('francoisTP', {start:0,end:5}),
                 frameRate: 10,
                 repeat: -1
             });
@@ -211,6 +224,8 @@ class sceneTest extends Phaser.Scene{
             function fireAllume(cheminee, fire) {
                 fire.destroy();
                 cheminee.setTexture('chemineeAllumee');
+                this.rouedefeu = true;
+                this.pointCoeur = 3;
             }
             this.physics.add.collider(this.fired, this.chemineeDroite, fireAllume, null, this);
 
@@ -226,9 +241,12 @@ class sceneTest extends Phaser.Scene{
 
             //MECHANT
             //poursuite
-            this.ennemy = this.physics.add.sprite((6000*8) - 3000, (5*6000)-3000, 'francois');
+            this.ennemy = this.physics.add.sprite((6000*8) - 2500, (5*6000)-3000, 'francois');
             this.ennemy.setGravityY(5000);
             this.ennemySide = 0;
+            this.ennemyFollow = false;
+
+            this.ennemyTP = 0;
 
             this.ennemy.anims.play('francoisMarche', true);
 
@@ -355,7 +373,7 @@ class sceneTest extends Phaser.Scene{
                     this.flameDispo++;
                     this.attaquePlayer = true;
                     this.player.anims.play({ key: 'MarcelAttak', startFrame: 0 }, true);
-                    } else if ((this.fireDash == true) && (this.player.body.velocity.x != 0)) {
+                    } else if ((this.fireDash == true) && (this.player.body.velocity.x != 0) && (this.rouedefeu == true)) {
                         if (this.player.body.velocity.x > 0 && !this.player.body.blocked.right) {
                             this.player.setVelocityX(4000);
                             this.fireDash = false;
@@ -426,6 +444,19 @@ class sceneTest extends Phaser.Scene{
             }, this);
 
             //MECHANT PATTERN
+            if (Phaser.Math.Distance.BetweenPoints(this.player, this.ennemy) < 3000) {this.ennemyFollow = true;}
+
+            if (this.ennemyTP != 0) {
+                this.ennemyTP++;
+                if (this.ennemyTP >= 30) {
+                    this.ennemyTP = 0;
+                    this.ennemy.setGravityY(5000);
+                    this.ennemy.anims.play('francoisMarche', true);
+                }
+            }
+
+            if (this.ennemyFollow == true && this.ennemyTP == 0) {
+
             if (this.AUFEU == false) {
             if (this.timerDash == 0) {
 
@@ -451,7 +482,6 @@ class sceneTest extends Phaser.Scene{
                     }}
                 }
                 }
-
                 if ((this.ennemy.y > this.player.y + 100) || (this.ennemy.y < this.player.y - 300)) {
                     if ((this.ennemy.x < this.player.x - 300)) {
                         this.ennemy.setVelocityX(1200);
@@ -520,6 +550,7 @@ class sceneTest extends Phaser.Scene{
                     this.ennemy.setVelocityY(-2000);
                 } else {this.ennemy.setVelocityY(2000);}
             }
+        }
 
             //Tableaux
 
@@ -544,9 +575,12 @@ class sceneTest extends Phaser.Scene{
                     this.ennemy.x = enemy.x;
                     this.ennemy.y = enemy.y;
                     this.ennemy.ennemySide = 0;
-                    this.ennemy.setGravityY(5000);
-                    this.ennemy.setVelocityY(-3000);
+                    this.ennemy.setGravityY(0);
+                    this.ennemy.setVelocityY(0);
+                    this.ennemy.setVelocityX(0);
                     this.ennemy.flipY = false;
+                    this.ennemyTP++;
+                    this.ennemy.anims.play('francoisSeTP', true);
                 }
             } else {enemy.setTexture('francoisTableauVert');}
         }, this);
