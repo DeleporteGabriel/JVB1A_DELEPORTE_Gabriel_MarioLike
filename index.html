@@ -147,8 +147,8 @@ class sceneTest extends Phaser.Scene{
             //PLAYER//
             this.cursors = this.input.keyboard.createCursorKeys();
 
-            this.player = this.physics.add.sprite(10*300,  38*300, 'MarcelIdle');
-            //this.player = this.physics.add.sprite(90*300,  98*300, 'MarcelIdle');
+            //this.player = this.physics.add.sprite(10*300,  38*300, 'MarcelIdle');
+            this.player = this.physics.add.sprite(90*300,  98*300, 'MarcelIdle');
             this.player.setGravityY(10000);
             this.player.setSize(350, 550)
             this.player.setOffset(125, 50)  
@@ -383,48 +383,53 @@ class sceneTest extends Phaser.Scene{
                         this.doubleJump = false;
                     }
                 } 
-                if (!this.player.body.blocked.down) {if ((this.grimpe == false) && (this.fireJump != 1)) {this.player.anims.play('MarcelJump', true);}}
+                if (!this.player.body.blocked.down) {if ((this.grimpe == false) && (this.fireJump != 1)) {this.player.anims.play('MarcelJump', true);} else if (this.fireJump != 1) {this.player.anims.play('MarcelLeftRun', true);}}
                 //déplacement droite gauche
-                if (this.cursors.left.isDown){ //si la touche gauche est appuyée
-                    this.player.setVelocityX(-1800); //alors vitesse négative en X
-                    if (this.player.body.blocked.down) {this.player.anims.play('MarcelLeftRun', true);}
-                    this.player.flipX = false;
-                }
-                else if (this.cursors.right.isDown){ //sinon si la touche droite est appuyée
-                    this.player.setVelocityX(1800); //alors vitesse positive en X
-                    if (this.player.body.blocked.down) {this.player.anims.play('MarcelLeftRun', true);}
-                    this.player.flipX = true;
-                }
-                else{ // sinon
-                    this.player.setVelocityX(0); //vitesse nulle
-                    if (this.player.body.blocked.down) {this.player.setTexture('MarcelIdle');}
-                }
-                //monter les rebords
-                if (this.player.body.blocked.right) {
-                    //this.player.x += 20;
-                    this.tile = this.wallGroupe.getTileAtWorldXY(this.player.x + 300, this.player.y - 300, true);
-                    if (this.tile.index == -1){
-                        this.player.body.y -= 150;
-                        this.grimpe = true;
+                if (this.fireJump != 1) {
+                    if (this.cursors.left.isDown){ //si la touche gauche est appuyée
+                        this.player.setVelocityX(-1800); //alors vitesse négative en X
+                        if (this.player.body.blocked.down) {this.player.anims.play('MarcelLeftRun', true);}
+                        this.player.flipX = false;
                     }
-                }
-                if (this.player.body.blocked.left) {
-                    //this.player.x -= 20;
-                    this.tile = this.wallGroupe.getTileAtWorldXY(this.player.x - 300, this.player.y - 300, true);
-                    if (this.tile.index == -1){
-                        this.player.body.y -= 150;
-                        this.grimpe = true;
+                    else if (this.cursors.right.isDown){ //sinon si la touche droite est appuyée
+                        this.player.setVelocityX(1800); //alors vitesse positive en X
+                        if (this.player.body.blocked.down) {this.player.anims.play('MarcelLeftRun', true);}
+                        this.player.flipX = true;
+                    }
+                    else{ // sinon
+                        this.player.setVelocityX(0); //vitesse nulle
+                        if (this.player.body.blocked.down) {this.player.setTexture('MarcelIdle');}
+                    }
+                    //monter les rebords
+                    if (this.player.body.blocked.right) {
+                        //this.player.x += 20;
+                        this.tile = this.wallGroupe.getTileAtWorldXY(this.player.x + 300, this.player.y - 300, true);
+                        if (this.tile.index == -1){
+                            this.player.body.y -= 150;
+                            this.grimpe = true;
+                        }
+                    }
+                    if (this.player.body.blocked.left) {
+                        //this.player.x -= 20;
+                        this.tile = this.wallGroupe.getTileAtWorldXY(this.player.x - 300, this.player.y - 300, true);
+                        if (this.tile.index == -1){
+                            this.player.body.y -= 150;
+                            this.grimpe = true;
+                        }
                     }
                 }
                 //attaquer
-                if (((!this.cursors.space.isDown) || (!this.cursors.up.isDown)) && (this.fireJump == 1)) {
+                if ((((!this.cursors.space.isDown) || (!this.cursors.up.isDown)) && (this.fireJump == 1)) || (this.player.body.blocked.up)) {
                     this.fireJump = 2;
+                    //this.attaquePlayer = false;
                 }
 
-                if ((this.cursors.space.isDown) && (this.fireJump != 2) && (this.cursors.up.isDown)) {
+                if ((this.cursors.space.isDown) && (this.fireJump != 2) && (this.cursors.up.isDown) && (this.superfusee == true)) {
                         if (this.fireJump == 0) {this.player.anims.play({ key: 'BouleFeu', startFrame: 0 }, true);}    
                         this.fireJump = 1;
+                        //this.attaquePlayer = true;
                         this.player.setVelocityY(-4000);
+                        this.player.setVelocityX(0);
                     }
                 else if (this.attaqueBouton) {
                     if ((this.flameDispo == 0) && (this.player.body.velocity.x == 0) && (!this.cursors.up.isDown)) {
