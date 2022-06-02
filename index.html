@@ -51,6 +51,9 @@ class sceneTest extends Phaser.Scene{
             this.load.spritesheet('marcel_kisaute', 'assets/Marcel qui saute.png',
             { frameWidth: 600, frameHeight: 600 });
 
+            this.load.spritesheet('fire_up', 'assets/fireUp.png',
+            { frameWidth: 600, frameHeight: 600 });
+
             //ennemy
             this.load.image('francois', 'assets/placeholder_mechant.png');
             this.load.spritesheet('francoisTP', 'assets/tpFrancois.png',
@@ -61,6 +64,9 @@ class sceneTest extends Phaser.Scene{
 
             this.load.spritesheet('francois2', 'assets/francois1erSpritesheet.png',
             {frameWidth :300, frameHeight: 300});
+
+            this.load.image('francoisBuste', 'assets/buste.png');
+            this.load.image('francoisLazer', 'assets/superLazer.png');
 
             //cheminees
             this.load.image('chemineeEteinte', 'assets/chemineeeteinte.png');
@@ -136,12 +142,13 @@ class sceneTest extends Phaser.Scene{
 
             //cheminée
             this.chemineeDroite = this.physics.add.sprite(170*300, (23*300) + 150, 'chemineeEteinte');
+            this.chemineeGauche = this.physics.add.sprite(10*300, (23*300) + 150, 'chemineeEteinte');
 
             //PLAYER//
             this.cursors = this.input.keyboard.createCursorKeys();
 
-            //this.player = this.physics.add.sprite((6000*5) - 3000,  (6000*5) - 2000, 'MarcelIdle');
-            this.player = this.physics.add.sprite(90*300,  98*300, 'MarcelIdle');
+            this.player = this.physics.add.sprite(10*300,  38*300, 'MarcelIdle');
+            //this.player = this.physics.add.sprite(90*300,  98*300, 'MarcelIdle');
             this.player.setGravityY(10000);
             this.player.setSize(350, 550)
             this.player.setOffset(125, 50)  
@@ -152,7 +159,10 @@ class sceneTest extends Phaser.Scene{
             this.doubleJump = true;
             this.fireDash = true;
             this.grimpe = false;
-            this.rouedefeu = true;
+            this.rouedefeu = false;
+
+            this.superfusee = false;
+            this.fireJump = 0;
 
             //animation
             this.anims.create({
@@ -170,6 +180,12 @@ class sceneTest extends Phaser.Scene{
             this.anims.create({
                 key: 'RoueFeu',
                 frames: this.anims.generateFrameNumbers('rouedefeu', {start:0,end:3}),
+                frameRate: 20,
+                repeat: -1
+            });
+            this.anims.create({
+                key: 'BouleFeu',
+                frames: this.anims.generateFrameNumbers('fire_up', {start:0,end:1}),
                 frameRate: 20,
                 repeat: -1
             });
@@ -206,11 +222,6 @@ class sceneTest extends Phaser.Scene{
             this.firedGround = this.physics.add.group();
             this.flameDispo = 0;
 
-            this.flameJauge = this.physics.add.sprite(-1200, -800, 'jaugeFeu');
-            this.flameJauge.body.allowGravity = false;
-            this.flameJauge.body.stop()
-            this.flameJauge.setScrollFactor(0);
-
             function firedCreate(fire, wall) {
                 fire.destroy();
                 this.grosFeu = this.firedGround.create(fire.x, fire.y - 150, 'grosFeu');
@@ -228,6 +239,14 @@ class sceneTest extends Phaser.Scene{
                 this.pointCoeur = 3;
             }
             this.physics.add.collider(this.fired, this.chemineeDroite, fireAllume, null, this);
+
+            function fireAllume2(cheminee, fire) {
+                fire.destroy();
+                cheminee.setTexture('chemineeAllumee');
+                this.superfusee = true;
+                this.pointCoeur = 3;
+            }
+            this.physics.add.collider(this.fired, this.chemineeGauche, fireAllume2, null, this);
 
             this.physics.world.setFPS(300);
             this.physics.add.collider(this.player, this.wallGroupe);
@@ -269,6 +288,28 @@ class sceneTest extends Phaser.Scene{
             }
 
             this.physics.add.overlap(this.ennemy, this.firedGround, OFEU, null, this);
+
+
+            //buste
+
+            this.busteEnnemis = this.physics.add.group()
+            this.busteLazer = this.physics.add.group()
+
+            carteDuNiveau.getObjectLayer('layer_buste').objects.forEach((busteEnnemis) => {
+                this.buste = this.busteEnnemis.create(busteEnnemis.x+150, busteEnnemis.y-150, 'francoisBuste');
+                this.buste.health = 0;
+            });
+
+            function degatSubit(player, lazer) {
+                lazer.destroy();
+                if (this.Iframe == 0) {
+                     this.pointCoeur -= 1;
+                    this.cameras.main.shake(100, 0.7);
+                    this.Iframe++;
+                }
+            }
+
+            this.physics.add.overlap(this.player, this.busteLazer, degatSubit, null, this);
             
             //rickroll
             /*this.anims.create({
@@ -283,6 +324,13 @@ class sceneTest extends Phaser.Scene{
             this.rickroll.body.stop();
             this.rickroll.anims.play('rickroll', true);
             this.rickroll.setScale(4);*/
+
+            //interface 
+
+            this.flameJauge = this.physics.add.sprite(-1200, -800, 'jaugeFeu');
+            this.flameJauge.body.allowGravity = false;
+            this.flameJauge.body.stop()
+            this.flameJauge.setScrollFactor(0);
         };
 
         update(time, delta){
@@ -323,6 +371,7 @@ class sceneTest extends Phaser.Scene{
                     this.grimpe = false;
                     this.doubleJump = true;
                     this.fireDash = true;
+                    this.fireJump = 0;
                 }
                 if (this.jump) //saut ou double saut
                 {   
@@ -334,7 +383,7 @@ class sceneTest extends Phaser.Scene{
                         this.doubleJump = false;
                     }
                 } 
-                if (!this.player.body.blocked.down) {if (this.grimpe == false) {this.player.anims.play('MarcelJump', true);}}
+                if (!this.player.body.blocked.down) {if ((this.grimpe == false) && (this.fireJump != 1)) {this.player.anims.play('MarcelJump', true);}}
                 //déplacement droite gauche
                 if (this.cursors.left.isDown){ //si la touche gauche est appuyée
                     this.player.setVelocityX(-1800); //alors vitesse négative en X
@@ -368,12 +417,22 @@ class sceneTest extends Phaser.Scene{
                     }
                 }
                 //attaquer
-                if (this.attaqueBouton) {
-                    if ((this.flameDispo == 0) && (this.player.body.velocity.x == 0)) {
+                if (((!this.cursors.space.isDown) || (!this.cursors.up.isDown)) && (this.fireJump == 1)) {
+                    this.fireJump = 2;
+                }
+
+                if ((this.cursors.space.isDown) && (this.fireJump != 2) && (this.cursors.up.isDown)) {
+                        if (this.fireJump == 0) {this.player.anims.play({ key: 'BouleFeu', startFrame: 0 }, true);}    
+                        this.fireJump = 1;
+                        this.player.setVelocityY(-4000);
+                    }
+                else if (this.attaqueBouton) {
+                    if ((this.flameDispo == 0) && (this.player.body.velocity.x == 0) && (!this.cursors.up.isDown)) {
                     this.flameDispo++;
                     this.attaquePlayer = true;
                     this.player.anims.play({ key: 'MarcelAttak', startFrame: 0 }, true);
-                    } else if ((this.fireDash == true) && (this.player.body.velocity.x != 0) && (this.rouedefeu == true)) {
+                    }
+                    else if ((this.fireDash == true) && (this.player.body.velocity.x != 0) && (this.rouedefeu == true)) {
                         if (this.player.body.velocity.x > 0 && !this.player.body.blocked.right) {
                             this.player.setVelocityX(4000);
                             this.fireDash = false;
@@ -556,6 +615,15 @@ class sceneTest extends Phaser.Scene{
 
 
             this.tableauEnnemis.children.each(function(enemy) {
+
+                //prise de degat
+                if ((this.player.x > enemy.x - 300) && (this.player.x < enemy.x + 300)
+                && (this.player.y > enemy.y - 300) && (this.player.y < enemy.y + 300) && (this.Iframe == 0)) {
+                    this.pointCoeur -= 1;
+                    this.cameras.main.shake(100, 0.7);
+                    this.Iframe++;
+                }
+
                 this.tile = this.wallTableau.getTileAtWorldXY(enemy.x, enemy.y, true);
                         if (this.tile.index != -1){
                         if (enemy.body.velocity.x > 0) {
@@ -583,6 +651,24 @@ class sceneTest extends Phaser.Scene{
                     this.ennemy.anims.play('francoisSeTP', true);
                 }
             } else {enemy.setTexture('francoisTableauVert');}
+        }, this);
+
+        //bustes
+
+        this.busteEnnemis.children.each(function(buste) {
+        if ((Phaser.Math.Distance.BetweenPoints(this.player, buste) < 2500) && (buste.health == 0)) {
+            this.lazer = this.busteLazer.create(buste.x, buste.y, 'francoisLazer');
+            this.physics.moveTo(this.lazer, this.player.x, this.player.y, 1000);
+            this.lazer.rotation = Phaser.Math.Angle.BetweenPoints(this.lazer, this.player)
+            buste.health++;
+        }
+        if (buste.health != 0) {
+            buste.health++;
+            if (buste.health >= 100) {
+                buste.health = 0;
+            }
+        }
+        if (this.player.x < buste.x) {buste.flipX = false;} else {buste.flipX = true;}
         }, this);
  
         };
