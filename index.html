@@ -76,6 +76,8 @@ class sceneTest extends Phaser.Scene{
             this.load.image('chemineeEteinte', 'assets/chemineeeteinte.png');
             this.load.image('chemineeAllumee', 'assets/chemineeallume.png');
 
+            this.load.image('particule', 'assets/particules.png')
+
             //collisions tiled
             this.load.image("Phaser_Collision", "assets/tileset_chambord.png");
             this.load.tilemapTiledJSON("carte", "assets/tiled_export.json");
@@ -147,6 +149,19 @@ class sceneTest extends Phaser.Scene{
             //cheminée
             this.chemineeDroite = this.physics.add.sprite(170*300, (23*300) + 150, 'chemineeEteinte');
             this.chemineeGauche = this.physics.add.sprite(10*300, (23*300) + 150, 'chemineeEteinte');
+
+            //particles
+            this.spark = this.add.particles('particule').createEmitter({
+                x: {min: 170*300 - 100, max: 170*300 + 100},
+                y:25*300 + 200,
+                lifespan: 2000,
+                speed: 250,
+                quantity: 1,
+                angle: {min: 220, max:320},
+                alpha: {start: 3, end: 0},
+                rotation: {start: 0, end:0.4},
+                scale: {start: 2, end:3},
+            });
 
             //PLAYER//
             this.cursors = this.input.keyboard.createCursorKeys();
