@@ -26,9 +26,11 @@ class sceneTest extends Phaser.Scene{
         preload(){
 
             //vies 
-            this.load.image('Vie3', 'assets/sel plein.png');
-            this.load.image('Vie2', 'assets/sel moitié plein.png');
-            this.load.image('Vie1', 'assets/sel moitié vide.png');
+            this.load.image('Vie5', 'assets/sel plein.png');
+            this.load.image('Vie4', 'assets/sel presque plein.png');
+            this.load.image('Vie3', 'assets/sel moitié plein.png');
+            this.load.image('Vie2', 'assets/sel moitié vide.png');
+            this.load.image('Vie1', 'assets/sel presque vide.png');
             this.load.image('Vie0', 'assets/sel vide.png');
 
             //marcel
@@ -76,6 +78,8 @@ class sceneTest extends Phaser.Scene{
             //cheminees
             this.load.image('chemineeEteinte', 'assets/chemineeeteinte.png');
             this.load.image('chemineeAllumee', 'assets/chemineeallume.png');
+
+            this.load.image('jesuisboogie', 'assets/candle.png');
 
             this.load.image('particule', 'assets/particules.png')
             this.load.image('particles', 'assets/smoke.png')
@@ -192,6 +196,13 @@ class sceneTest extends Phaser.Scene{
 
             this.sparkRoue.active = false;
             this.sparkBoule.active = false;
+
+            this.noussommesboogie = this.physics.add.group();
+            //bougies
+            carteDuNiveau.getObjectLayer('layer_bougie').objects.forEach((spawner) => {
+                this.bougie = this.noussommesboogie.create(spawner.x, spawner.y - 150, 'jesuisboogie');
+                this.bougie.health = 1;
+            });
             //PARTICULES//
 
             //PLAYER//
@@ -464,6 +475,52 @@ class sceneTest extends Phaser.Scene{
             }
             this.physics.add.collider(this.fired, this.chemineeGauche, fireAllume2, null, this);
 
+            function allumeBoogie(fire, bougie) {
+
+            if (bougie.health == 1) {
+                bougie.health = 0;
+                this.pointCoeur += 1;
+                if (this.pointCoeur >= 5) {
+                    this.pointCoeur = 5;
+                }
+
+                this.sparkBougie = this.add.particles('particles').createEmitter({
+                    alpha: { start: 1, end: 0 },
+                    scale: { start: 1, end: 1.5 },
+                    //tint: { start: 0xff945e, end: 0xff945e },
+                    speed: 200,
+                    accelerationY: -50,
+                    angle: { min: -95, max: -85 },
+                    rotate: { min: -180, max: 180 },
+                    lifespan: { min: 500, max: 550 },
+                    //blendMode: 'ADD',
+                    frequency: 150,
+                    //maxParticles: 10,
+                    x: bougie.x,
+                    y: {min: bougie.y - 170, max: bougie.y - 140}
+                });
+                this.sparkBougie2 = this.add.particles('particule').createEmitter({
+                    alpha: { start: 1, end: 0 },
+                    scale: { start: 1, end: 1.5 },
+                    //tint: { start: 0xff945e, end: 0xff945e },
+                    speed: 200,
+                    accelerationY: -50,
+                    angle: { min: -95, max: -85 },
+                    rotate: { min: -180, max: 180 },
+                    lifespan: { min: 500, max: 550 },
+                    blendMode: 'ADD',
+                    frequency: 150,
+                    //maxParticles: 10,
+                    x: bougie.x,
+                    y: {min: bougie.y - 170, max: bougie.y - 140}
+                });
+            }
+            }
+
+            this.physics.add.overlap(this.fired, this.noussommesboogie, allumeBoogie, null, this);
+            this.physics.add.overlap(this.firedGround, this.noussommesboogie, allumeBoogie, null, this);
+            this.physics.add.overlap(this.firedWall, this.noussommesboogie, allumeBoogie, null, this);
+
             this.physics.world.setFPS(300);
 
             this.wallGroupe = carteDuNiveau.createLayer(
@@ -489,7 +546,7 @@ class sceneTest extends Phaser.Scene{
             //VIE
             this.imageVie = this.add.image(-1800, -800, 'Vie3');
             this.imageVie.setScrollFactor(0);
-            this.pointCoeur = 3;
+            this.pointCoeur = 5;
 
             this.Iframe = 0;
 
@@ -615,7 +672,13 @@ class sceneTest extends Phaser.Scene{
             }
 
             //POINT DE VIES
-            if (this.pointCoeur == 3) {
+            if (this.pointCoeur == 5) {
+                this.imageVie.setTexture('Vie5');
+            }
+            else if (this.pointCoeur == 4) {
+                this.imageVie.setTexture('Vie4');
+            }
+            else if (this.pointCoeur == 3) {
                 this.imageVie.setTexture('Vie3');
             } else if (this.pointCoeur == 2) {
                 this.imageVie.setTexture('Vie2');
