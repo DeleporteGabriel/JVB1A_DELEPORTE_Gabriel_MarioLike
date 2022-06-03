@@ -122,21 +122,8 @@ class sceneTest extends Phaser.Scene{
                     "layer_fire",
                     tileset
                 );
-            this.wallGroupe = carteDuNiveau.createLayer(
-                    "layer_walls",
-                    tileset
-                );
-            const wallDeco = carteDuNiveau.createLayer(
-                    "layer_deco",
-                    tileset
-                );
-            this.wallTableau = carteDuNiveau.createLayer(
-                    "layer_tableau",
-                    tileset
-                );
-            this.wallGroupe.setCollisionByProperty({ solide: true });
+            
             wallFire.setCollisionByProperty({ solide: true });
-            this.wallTableau.visible = false;
             FondDeco.setScrollFactor(0.9);
             wallFire.visible = false;
 
@@ -210,8 +197,10 @@ class sceneTest extends Phaser.Scene{
             //PLAYER//
             this.cursors = this.input.keyboard.createCursorKeys();
 
-            this.player = this.physics.add.sprite(170*300,  25*300, 'MarcelIdle');
-            //this.player = this.physics.add.sprite(90*300,  98*300, 'MarcelIdle');
+            this.playerPosition = 0;
+
+            //this.player = this.physics.add.sprite(170*300,  25*300, 'MarcelIdle');
+            this.player = this.physics.add.sprite(90*300,  98*300, 'MarcelIdle');
             this.player.setGravityY(10000);
             this.player.setSize(350, 550)
             this.player.setOffset(125, 50)  
@@ -278,14 +267,6 @@ class sceneTest extends Phaser.Scene{
                 repeat: -1
             });
 
-            //VIE
-            this.imageVie = this.add.image(-1800, -800, 'Vie3');
-            this.imageVie.setScrollFactor(0);
-            this.pointCoeur = 3;
-
-            this.Iframe = 0;
-
-
             //FEU
             //murs
             carteDuNiveau.getObjectLayer('layer_particles').objects.forEach((spawner) => {
@@ -345,6 +326,39 @@ class sceneTest extends Phaser.Scene{
                     speed: 1400,
                     accelerationX: -500,
                     angle: { min: -5, max: 5 },
+                    rotate: { min: -180, max: 180 },
+                    lifespan: { min: 1000, max: 1100 },
+                    blendMode: 'ADD',
+                    frequency: 15,
+                    //maxParticles: 10,
+                    x: spawner.x + 150,
+                    y: {min: spawner.y - 170, max: spawner.y - 130}
+                });
+            });
+
+            carteDuNiveau.getObjectLayer('layer_particles_HD').objects.forEach((spawner) => {
+                this.sparkPorte2 = this.add.particles('particles').createEmitter({
+                    alpha: { start: 1, end: 0 },
+                    scale: { start: 2.5, end: 5 },
+                    //tint: { start: 0xff945e, end: 0xff945e },
+                    speed: 1400,
+                    accelerationX: -500,
+                    angle: { min: 185, max: 175 },
+                    rotate: { min: -180, max: 180 },
+                    lifespan: { min: 1000, max: 1100 },
+                    //blendMode: 'ADD',
+                    frequency: 15,
+                    //maxParticles: 10,
+                    x: spawner.x + 150,
+                    y: {min: spawner.y - 170, max: spawner.y - 130}
+                });
+                this.sparkPorte3 = this.add.particles('particule').createEmitter({
+                    alpha: { start: 1, end: 0 },
+                    scale: { start: 3, end: 7.5 },
+                    //tint: { start: 0xff945e, end: 0xff945e },
+                    speed: 1400,
+                    accelerationX: -500,
+                    angle: { min: 185, max: 175 },
                     rotate: { min: -180, max: 180 },
                     lifespan: { min: 1000, max: 1100 },
                     blendMode: 'ADD',
@@ -425,9 +439,6 @@ class sceneTest extends Phaser.Scene{
                 }
             }
 
-            this.physics.add.collider(this.fired, this.wallGroupe, firedCreate, null, this);
-            this.physics.add.collider(this.firedGround, this.wallGroupe);
-
 
             function fireAllume(cheminee, fire) {
                 fire.destroy();
@@ -454,10 +465,35 @@ class sceneTest extends Phaser.Scene{
             this.physics.add.collider(this.fired, this.chemineeGauche, fireAllume2, null, this);
 
             this.physics.world.setFPS(300);
-            this.physics.add.collider(this.player, this.wallGroupe);
 
+            this.wallGroupe = carteDuNiveau.createLayer(
+                    "layer_walls",
+                    tileset
+                );
+            const wallDeco = carteDuNiveau.createLayer(
+                    "layer_deco",
+                    tileset
+                );
+            this.wallTableau = carteDuNiveau.createLayer(
+                    "layer_tableau",
+                    tileset
+                );
+            this.wallGroupe.setCollisionByProperty({ solide: true });
+            this.wallTableau.visible = false;
+
+            this.physics.add.collider(this.player, this.wallGroupe);
+            this.physics.add.collider(this.fired, this.wallGroupe, firedCreate, null, this);
+            this.physics.add.collider(this.firedGround, this.wallGroupe);
 
             //CAMERA
+            //VIE
+            this.imageVie = this.add.image(-1800, -800, 'Vie3');
+            this.imageVie.setScrollFactor(0);
+            this.pointCoeur = 3;
+
+            this.Iframe = 0;
+
+            
             this.cameras.main.zoom = 0.225;
 
             this.cameras.main.setBounds(6000*5, 6000*5, 6000, 6000);
@@ -506,11 +542,13 @@ class sceneTest extends Phaser.Scene{
             });
 
             function degatSubit(player, lazer) {
-                lazer.destroy();
-                if (this.Iframe == 0) {
-                     this.pointCoeur -= 1;
-                    this.cameras.main.shake(100, 0.7);
-                    this.Iframe++;
+                if (this.fireDash == true) {
+                    lazer.destroy();
+                    if (this.Iframe == 0){
+                        this.pointCoeur -= 1;
+                        this.cameras.main.shake(100, 0.7);
+                        this.Iframe++;
+                    }
                 }
             }
 
@@ -571,6 +609,7 @@ class sceneTest extends Phaser.Scene{
                 for (this.j = 0; this.j < 5; this.j++) {
                     if ((this.player.x < 6000*(this.i + 1)) && (this.player.x > 6000*this.i) && (this.player.y < 6000*(this.j + 1)) && (this.player.y > 6000*this.j)) {
                         this.cameras.main.setBounds(6000*this.i, 6000*this.j, 6000, 6000);
+                        this.playerPosition = this.i + (this.j*this.i);
                     }
                 }
             }
@@ -829,6 +868,7 @@ class sceneTest extends Phaser.Scene{
             }
             if (this.timerDash != 0) {
                 this.timerDash++;
+                this.ennemy.setVelocityY(0);
                 if (this.timerDash >= 25) {
                     this.timerDash = 0;
                     this.ennemy.setVelocityX(0);
@@ -840,7 +880,8 @@ class sceneTest extends Phaser.Scene{
                 }
 
                 if ((this.fireDash == true) && (this.player.x > this.ennemy.x - 300) && (this.player.x < this.ennemy.x + 300)
-                && (this.player.y > this.ennemy.y - 300) && (this.player.y < this.ennemy.y + 300) && (this.Iframe == 0)) {
+                && (this.player.y > this.ennemy.y - 300) && (this.player.y < this.ennemy.y + 300) && (this.Iframe == 0))
+                    {
                     this.pointCoeur -= 1;
                     this.cameras.main.shake(100, 0.7);
                     this.Iframe++;
@@ -868,7 +909,7 @@ class sceneTest extends Phaser.Scene{
 
                 //prise de degat
                 if ((this.player.x > enemy.x - 300) && (this.player.x < enemy.x + 300)
-                && (this.player.y > enemy.y - 300) && (this.player.y < enemy.y + 300) && (this.Iframe == 0)) {
+                && (this.player.y > enemy.y - 300) && (this.player.y < enemy.y + 300) && (this.Iframe == 0) && (this.fireDash == true)) {
                     this.pointCoeur -= 1;
                     this.cameras.main.shake(100, 0.7);
                     this.Iframe++;
@@ -906,7 +947,16 @@ class sceneTest extends Phaser.Scene{
         //bustes
 
         this.busteEnnemis.children.each(function(buste) {
-        if ((Phaser.Math.Distance.BetweenPoints(this.player, buste) < 2500) && (buste.health == 0)) {
+        for (this.i = 0; this.i < 9; this.i++) {
+            for (this.j = 0; this.j < 5; this.j++) {
+                if ((buste.x < 6000*(this.i + 1)) && (buste.x > 6000*this.i) && (buste.y < 6000*(this.j + 1)) && (buste.y > 6000*this.j)) {
+                    this.bustePosition = this.i + (this.j*this.i);
+                }
+            }
+        }
+
+
+        if ((Phaser.Math.Distance.BetweenPoints(this.player, buste) < 2500) && (buste.health == 0) && (this.bustePosition == this.playerPosition)) {
             this.lazer = this.busteLazer.create(buste.x, buste.y, 'francoisLazer');
             this.physics.moveTo(this.lazer, this.player.x, this.player.y, 1000);
             this.lazer.rotation = Phaser.Math.Angle.BetweenPoints(this.lazer, this.player)
@@ -920,6 +970,19 @@ class sceneTest extends Phaser.Scene{
         }
         if (this.player.x < buste.x) {buste.flipX = false;} else {buste.flipX = true;}
         }, this);
+
+        this.busteLazer.children.each(function(buste) {
+        for (this.i = 0; this.i < 9; this.i++) {
+            for (this.j = 0; this.j < 5; this.j++) {
+                if ((buste.x < 6000*(this.i + 1)) && (buste.x > 6000*this.i) && (buste.y < 6000*(this.j + 1)) && (buste.y > 6000*this.j)) {
+                    this.bustePosition = this.i + (this.j*this.i);
+                }
+            }
+        }
+        if (this.playerPosition != this.bustePosition) {
+            buste.destroy();
+        }
+    }, this);
 
         //origamis
         this.origamis.children.each(function(enemy) {
