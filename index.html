@@ -39,6 +39,7 @@ class sceneTest extends Phaser.Scene{
             this.load.image('fireblast', 'assets/le FEU.png')
             this.load.image('grosFeu', 'assets/FEU.png')
             this.load.image('jaugeFeu', 'assets/leFEU3.png')
+            this.load.image('feuMural', 'assets/feuVerticale.png')
             this.load.image('rechargeFeu', 'assets/flamebleu.png');
 
             this.load.spritesheet('marcel_walk', 'assets/Marcel run left.png',
@@ -77,6 +78,7 @@ class sceneTest extends Phaser.Scene{
             this.load.image('chemineeAllumee', 'assets/chemineeallume.png');
 
             this.load.image('particule', 'assets/particules.png')
+            this.load.image('particles', 'assets/smoke.png')
 
             //collisions tiled
             this.load.image("Phaser_Collision", "assets/tileset_chambord.png");
@@ -136,6 +138,7 @@ class sceneTest extends Phaser.Scene{
             wallFire.setCollisionByProperty({ solide: true });
             this.wallTableau.visible = false;
             FondDeco.setScrollFactor(0.9);
+            wallFire.visible = false;
 
             //tableau
 
@@ -150,18 +153,59 @@ class sceneTest extends Phaser.Scene{
             this.chemineeDroite = this.physics.add.sprite(170*300, (23*300) + 150, 'chemineeEteinte');
             this.chemineeGauche = this.physics.add.sprite(10*300, (23*300) + 150, 'chemineeEteinte');
 
-            //particles
-            this.spark = this.add.particles('particule').createEmitter({
-                x: {min: 170*300 - 100, max: 170*300 + 100},
-                y:25*300 + 200,
-                lifespan: 2000,
-                speed: 250,
-                quantity: 1,
-                angle: {min: 220, max:320},
-                alpha: {start: 3, end: 0},
-                rotation: {start: 0, end:0.4},
-                scale: {start: 2, end:3},
+            //PARTICULES//
+            //cheminée
+            this.sparkSpawn = this.add.particles('particule').createEmitter({
+                alpha: { start: 1, end: 0 },
+                scale: { start: 3, end: 7.5 },
+                //tint: { start: 0xff945e, end: 0xff945e },
+                speed: 60,
+                accelerationY: -900,
+                angle: { min: -85, max: -95 },
+                rotate: { min: -180, max: 180 },
+                lifespan: { min: 1000, max: 1100 },
+                blendMode: 'ADD',
+                frequency: 30,
+                //maxParticles: 10,
+                x: {min: 90*300 - 200, max: 90*300 + 200},
+                y: 98*300 + 200
             });
+
+            this.sparkRoue = this.add.particles('particule').createEmitter({
+                alpha: { start: 1, end: 0 },
+                scale: { start: 3, end: 7.5 },
+                //tint: { start: 0xff945e, end: 0xff945e },
+                speed: 60,
+                accelerationY: -900,
+                angle: { min: -85, max: -95 },
+                rotate: { min: -180, max: 180 },
+                lifespan: { min: 1000, max: 1100 },
+                blendMode: 'ADD',
+                frequency: 30,
+                //maxParticles: 10,
+                x: {min: 170*300 - 200, max: 170*300 + 200},
+                y: 25*300 + 200
+            });
+
+            this.sparkBoule = this.add.particles('particule').createEmitter({
+                alpha: { start: 1, end: 0 },
+                scale: { start: 3, end: 7.5 },
+                //tint: { start: 0xff945e, end: 0xff945e },
+                speed: 60,
+                accelerationY: -900,
+                angle: { min: -85, max: -95 },
+                rotate: { min: -180, max: 180 },
+                lifespan: { min: 1000, max: 1100 },
+                blendMode: 'ADD',
+                frequency: 30,
+                //maxParticles: 10,
+                x: {min: 10*300 - 200, max: 10*300 + 200},
+                y: 25*300 + 200
+            });
+
+            this.sparkRoue.active = false;
+            this.sparkBoule.active = false;
+            //PARTICULES//
 
             //PLAYER//
             this.cursors = this.input.keyboard.createCursorKeys();
@@ -243,14 +287,142 @@ class sceneTest extends Phaser.Scene{
 
 
             //FEU
+            //murs
+            carteDuNiveau.getObjectLayer('layer_particles').objects.forEach((spawner) => {
+                this.sparkPorte0 = this.add.particles('particles').createEmitter({
+                    alpha: { start: 1, end: 0 },
+                    scale: { start: 2.5, end: 5 },
+                    //tint: { start: 0xff945e, end: 0xff945e },
+                    speed: 400,
+                    accelerationY: -900,
+                    angle: { min: -85, max: -95 },
+                    rotate: { min: -180, max: 180 },
+                    lifespan: { min: 1000, max: 1100 },
+                    //blendMode: 'ADD',
+                    frequency: 15,
+                    //maxParticles: 10,
+                    x: {min: spawner.x - 150, max: spawner.x + 150},
+                    y: spawner.y
+                });
+                this.sparkPorte1 = this.add.particles('particule').createEmitter({
+                    alpha: { start: 1, end: 0 },
+                    scale: { start: 3, end: 7.5 },
+                    //tint: { start: 0xff945e, end: 0xff945e },
+                    speed: 400,
+                    accelerationY: -900,
+                    angle: { min: -85, max: -95 },
+                    rotate: { min: -180, max: 180 },
+                    lifespan: { min: 1000, max: 1100 },
+                    blendMode: 'ADD',
+                    frequency: 15,
+                    //maxParticles: 10,
+                    x: {min: spawner.x - 150, max: spawner.x + 150},
+                    y: spawner.y
+                });
+            });
+
+            //sol
+            carteDuNiveau.getObjectLayer('layer_particles_H').objects.forEach((spawner) => {
+                this.sparkPorte2 = this.add.particles('particles').createEmitter({
+                    alpha: { start: 1, end: 0 },
+                    scale: { start: 2.5, end: 5 },
+                    //tint: { start: 0xff945e, end: 0xff945e },
+                    speed: 1400,
+                    accelerationX: -500,
+                    angle: { min: -5, max: 5 },
+                    rotate: { min: -180, max: 180 },
+                    lifespan: { min: 1000, max: 1100 },
+                    //blendMode: 'ADD',
+                    frequency: 15,
+                    //maxParticles: 10,
+                    x: spawner.x + 150,
+                    y: {min: spawner.y - 170, max: spawner.y - 130}
+                });
+                this.sparkPorte3 = this.add.particles('particule').createEmitter({
+                    alpha: { start: 1, end: 0 },
+                    scale: { start: 3, end: 7.5 },
+                    //tint: { start: 0xff945e, end: 0xff945e },
+                    speed: 1400,
+                    accelerationX: -500,
+                    angle: { min: -5, max: 5 },
+                    rotate: { min: -180, max: 180 },
+                    lifespan: { min: 1000, max: 1100 },
+                    blendMode: 'ADD',
+                    frequency: 15,
+                    //maxParticles: 10,
+                    x: spawner.x + 150,
+                    y: {min: spawner.y - 170, max: spawner.y - 130}
+                });
+            });
+
+            //attack
+            this.sparkAttaqueSmoke = this.add.particles('particles').createEmitter({
+                alpha: { start: 1, end: 0 },
+                scale: { start: 2, end: 5 },
+                //tint: { start: 0xff945e, end: 0xff945e },
+                speed: 60,
+                accelerationY: -900,
+                angle: { min: -85, max: -95 },
+                rotate: { min: -180, max: 180 },
+                lifespan: { min: 1000, max: 1100 },
+                //blendMode: 'ADD',
+                frequency: 30,
+                //maxParticles: 10,
+            });
+            this.sparkAttaque = this.add.particles('particule').createEmitter({
+                alpha: { start: 1, end: 0 },
+                scale: { start: 3, end: 7.5 },
+                //tint: { start: 0xff945e, end: 0xff945e },
+                speed: 60,
+                accelerationY: -900,
+                angle: { min: -85, max: -95 },
+                rotate: { min: -180, max: 180 },
+                lifespan: { min: 1000, max: 1100 },
+                blendMode: 'ADD',
+                frequency: 30,
+                //maxParticles: 10,
+            });
+
+            this.sparkAttaque.setPosition(0, 0);
+            this.sparkAttaqueSmoke.setPosition(0, 0);
+
             this.fired = this.physics.add.group();
             this.firedGround = this.physics.add.group();
+            this.firedWall  = this.physics.add.group();
             this.flameDispo = 0;
+            this.flameDirection = 0;
 
             function firedCreate(fire, wall) {
-                fire.destroy();
-                this.grosFeu = this.firedGround.create(fire.x, fire.y - 150, 'grosFeu');
-                this.grosFeu.health = 100;
+
+                if (this.flameDirection == 0) {
+                    this.sparkAttaque.setPosition({min: fire.x - 300, max: fire.x + 300}, fire.y + 100);
+                    this.sparkAttaqueSmoke.setPosition({min: fire.x - 300, max: fire.x + 300}, fire.y + 100);
+                    fire.destroy();
+
+                    this.grosFeu = this.firedGround.create(fire.x, fire.y - 150, 'grosFeu');
+                    this.grosFeu.visible = false;
+                    this.grosFeu.health = 100;
+                }
+                else {
+                    if (this.flameDirection == 1) {
+                        this.sparkAttaque.setPosition(fire.x + 150, {min : fire.y - 100, max: fire.y + 100});
+                        this.sparkAttaqueSmoke.setPosition(fire.x + 150, {min : fire.y - 100, max: fire.y + 100});
+                        fire.destroy();
+
+                        this.grosFeu = this.firedWall.create(fire.x + 150, fire.y, 'feuMural');
+                        this.grosFeu.visible = false;
+                        this.grosFeu.health = 100;
+                    }
+                    else if (this.flameDirection == 2) {
+                        this.sparkAttaque.setPosition(fire.x - 150, {min : fire.y - 100, max: fire.y + 100});
+                        this.sparkAttaqueSmoke.setPosition(fire.x - 150, {min : fire.y - 100, max: fire.y + 100});
+                        fire.destroy();
+
+                        this.grosFeu = this.firedWall.create(fire.x - 150, fire.y, 'feuMural');
+                        this.grosFeu.visible = false;
+                        this.grosFeu.health = 100;
+                    }
+                }
             }
 
             this.physics.add.collider(this.fired, this.wallGroupe, firedCreate, null, this);
@@ -259,24 +431,24 @@ class sceneTest extends Phaser.Scene{
 
             function fireAllume(cheminee, fire) {
                 fire.destroy();
-                cheminee.setTexture('chemineeAllumee');
+                this.sparkRoue.active = true;
                 if (this.rouedefeu == false) {
                     this.rouedefeu = true;
                     this.pointCoeur = 3;
                     this.scene.pause();
-                    this.scene.launch('sceneB');
+                    this.scene.launch('sceneB', {powerup : 1});
                 }
             }
             this.physics.add.collider(this.fired, this.chemineeDroite, fireAllume, null, this);
 
             function fireAllume2(cheminee, fire) {
                 fire.destroy();
-                cheminee.setTexture('chemineeAllumee');
+                this.sparkBoule.active = true;
                 if (this.superfusee == false) {
                     this.superfusee = true;
                     this.pointCoeur = 3;
                     this.scene.pause();
-                    this.scene.launch('sceneB');
+                    this.scene.launch('sceneB', {powerup : 2});
                 }
             }
             this.physics.add.collider(this.fired, this.chemineeGauche, fireAllume2, null, this);
@@ -518,14 +690,17 @@ class sceneTest extends Phaser.Scene{
                 if (this.cursors.down.isDown) {
                     this.feu = this.fired.create(this.player.x, this.player.y - 50, 'fireblast');
                         this.feu.setVelocityY(4000);
+                        this.flameDirection = 0;
                 }
                 else {
                     if (this.player.flipX == false) {
                         this.feu = this.fired.create(this.player.x - 200, this.player.y - 50, 'fireblast');
                         this.feu.setVelocityX(-4000);
+                        this.flameDirection = 2;
                     } else {
                         this.feu = this.fired.create(this.player.x + 200, this.player.y - 50, 'fireblast');
                         this.feu.setVelocityX(4000);
+                        this.flameDirection = 1;
                     }
                 }
                 }
@@ -561,6 +736,18 @@ class sceneTest extends Phaser.Scene{
                 feu.health -= 1;
                 if (feu.health < 40) {feu.alpha -= 0.05;}
                 if (feu.health <= 0) {
+                    this.sparkAttaque.setPosition(0, 0);
+                    this.sparkAttaqueSmoke.setPosition(0, 0);
+                    feu.destroy();
+                }
+            }, this);
+
+            this.firedWall.children.each(function(feu) {
+                feu.health -= 1;
+                if (feu.health < 40) {feu.alpha -= 0.05;}
+                if (feu.health <= 0) {
+                    this.sparkAttaque.setPosition(0, 0);
+                    this.sparkAttaqueSmoke.setPosition(0, 0);
                     feu.destroy();
                 }
             }, this);
@@ -749,16 +936,53 @@ class sceneB extends Phaser.Scene{
     constructor(){
         super('sceneB');
     }
+
+    init(data) {
+        this.powerup = data.powerup;
+    }
+
+preload() {
+    this.load.spritesheet("animRoueFeu", "assets/BD/spritesheet rouedefeu.png", {frameWidth :600, frameHeight: 338});
+    this.load.spritesheet("animBouleFeu", "assets/BD/spritesheet boulefeu.png", {frameWidth :600, frameHeight: 338});
+}
 create ()
 {
     //this.add.image(400, 300, 'face').setAlpha(0.5);
     this.cursors = this.input.keyboard.createCursorKeys();
+
+    if (this.powerup == 1) {
+    this.anims.create({
+                key: 'BD_rouefeu',
+                frames: this.anims.generateFrameNumbers('animRoueFeu', {start:0,end:46}),
+                frameRate: 12,
+                repeat: 0
+            });
+
+    this.BDroue = this.physics.add.sprite(690, 360, 'animRoueFeu');
+    this.BDroue.anims.play('BD_rouefeu', true);
+    this.BDroue.setScale(2.13);
+    }
+
+    if (this.powerup == 2) {
+    this.anims.create({
+                key: 'BD_boulefeu',
+                frames: this.anims.generateFrameNumbers('animBouleFeu', {start:0,end:46}),
+                frameRate: 12,
+                repeat: 0
+            });
+
+    this.BDboule = this.physics.add.sprite(690, 360, 'animBouleFeu');
+    this.BDboule.anims.play('BD_boulefeu', true);
+    this.BDboule.setScale(2.13);
+    }
+
+    this.change = 0;
 }
 
 update () {
-    this.pauseBouton = Phaser.Input.Keyboard.JustDown(this.cursors.space);
+    this.change++;
+    if (this.change > 220) {this.scene.resume('sceneTest'); this.scene.stop();}
 
-    if (this.pauseBouton) {this.scene.resume('sceneTest');}
 }
 
 };
@@ -769,7 +993,7 @@ var config = {
         physics: {
         default: 'arcade',
         arcade: {
-        debug: true
+        debug: false
         }},
         pixelArt: true,
         roundPixels: true,
