@@ -89,18 +89,19 @@ class sceneTest extends Phaser.Scene{
             this.load.tilemapTiledJSON("carte", "assets/tiled_export.json");
             this.load.image('image_fond', 'assets/fond tile.png')
 
+            this.load.image('lefond', 'assets/fond ciel.png');
+
             //rickroll
             this.load.spritesheet('Rickroll_spritesheet', 'assets/rickroll spritesheet.png',
             { frameWidth: 498, frameHeight: 373 });
         }
 
         create(){
-            for (this.i = 0; this.i < 8; this.i++){
-                for (this.j = 0; this.j < 12; this.j++){
-                    this.fond = this.add.image(6000*this.j, 4500*this.i, 'image_fond');
-                    this.fond.setScrollFactor(0.9);
-                }
-            }
+
+            this.fond = this.add.image(3400, 1500, 'lefond');
+            this.fond.setScrollFactor(0.1);
+
+
 
             //COLLISIONS//
             const carteDuNiveau = this.add.tilemap("carte");
@@ -128,7 +129,6 @@ class sceneTest extends Phaser.Scene{
                 );
             
             wallFire.setCollisionByProperty({ solide: true });
-            FondDeco.setScrollFactor(0.9);
             wallFire.visible = false;
 
             //tableau
@@ -143,6 +143,7 @@ class sceneTest extends Phaser.Scene{
             //cheminée
             this.chemineeDroite = this.physics.add.sprite(170*300, (23*300) + 150, 'chemineeEteinte');
             this.chemineeGauche = this.physics.add.sprite(10*300, (23*300) + 150, 'chemineeEteinte');
+            this.chemineeFinale = this.physics.add.sprite(90*300, (3*300) + 150, 'chemineeEteinte');
 
             //PARTICULES//
             //cheminée
@@ -210,8 +211,8 @@ class sceneTest extends Phaser.Scene{
 
             this.playerPosition = 0;
 
-            //this.player = this.physics.add.sprite(170*300,  25*300, 'MarcelIdle');
-            this.player = this.physics.add.sprite(90*300,  98*300, 'MarcelIdle');
+            this.player = this.physics.add.sprite(90*300,  2*300, 'MarcelIdle');
+            //this.player = this.physics.add.sprite(90*300,  98*300, 'MarcelIdle');
             this.player.setGravityY(10000);
             this.player.setSize(350, 550)
             this.player.setOffset(125, 50)  
@@ -456,7 +457,7 @@ class sceneTest extends Phaser.Scene{
                 this.sparkRoue.active = true;
                 if (this.rouedefeu == false) {
                     this.rouedefeu = true;
-                    this.pointCoeur = 3;
+                    this.pointCoeur = 5;
                     this.scene.pause();
                     this.scene.launch('sceneB', {powerup : 1});
                 }
@@ -468,7 +469,7 @@ class sceneTest extends Phaser.Scene{
                 this.sparkBoule.active = true;
                 if (this.superfusee == false) {
                     this.superfusee = true;
-                    this.pointCoeur = 3;
+                    this.pointCoeur = 5;
                     this.scene.pause();
                     this.scene.launch('sceneB', {powerup : 2});
                 }
@@ -552,6 +553,7 @@ class sceneTest extends Phaser.Scene{
 
             
             this.cameras.main.zoom = 0.225;
+            //this.cameras.main.zoom = 0.025;
 
             this.cameras.main.setBounds(6000*5, 6000*5, 6000, 6000);
             this.cameras.main.startFollow(this.player);
