@@ -211,8 +211,10 @@ class sceneTest extends Phaser.Scene{
 
             this.playerPosition = 0;
 
-            this.player = this.physics.add.sprite(90*300,  2*300, 'MarcelIdle');
-            //this.player = this.physics.add.sprite(90*300,  98*300, 'MarcelIdle');
+            //this.player = this.physics.add.sprite(90*300,  2*300, 'MarcelIdle');
+            this.player = this.physics.add.sprite(90*300,  98*300, 'MarcelIdle');
+            this.playerSpawnX = 90*300;
+            this.playerSpawnY = 98*300;
             this.player.setGravityY(10000);
             this.player.setSize(350, 550)
             this.player.setOffset(125, 50)  
@@ -456,6 +458,8 @@ class sceneTest extends Phaser.Scene{
                 fire.destroy();
                 this.sparkRoue.active = true;
                 if (this.rouedefeu == false) {
+                    this.playerSpawnX = cheminee.x;
+                    this.playerSpawnY = cheminee.y + 300;
                     this.rouedefeu = true;
                     this.pointCoeur = 5;
                     this.scene.pause();
@@ -468,6 +472,8 @@ class sceneTest extends Phaser.Scene{
                 fire.destroy();
                 this.sparkBoule.active = true;
                 if (this.superfusee == false) {
+                    this.playerSpawnX = cheminee.x;
+                    this.playerSpawnY = cheminee.y + 300;
                     this.superfusee = true;
                     this.pointCoeur = 5;
                     this.scene.pause();
@@ -479,6 +485,8 @@ class sceneTest extends Phaser.Scene{
             function allumeBoogie(fire, bougie) {
 
             if (bougie.health == 1) {
+                this.playerSpawnX = bougie.x;
+                this.playerSpawnY = bougie.y - 300;
                 bougie.health = 0;
                 this.pointCoeur += 1;
                 if (this.pointCoeur >= 5) {
@@ -662,6 +670,13 @@ class sceneTest extends Phaser.Scene{
 
         update(time, delta){
             super.update(time, delta);
+
+            //respawn
+            if (this.pointCoeur <= 0) {
+                this.pointCoeur = 5;
+                this.player.x = this.playerSpawnX;
+                this.player.y = this.playerSpawnY;
+            }
 
             //CAMERA
             for (this.i = 0; this.i < 9; this.i++) {
