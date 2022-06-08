@@ -211,8 +211,8 @@ class sceneTest extends Phaser.Scene{
 
             this.playerPosition = 0;
 
-            //this.player = this.physics.add.sprite(90*300,  2*300, 'MarcelIdle');
-            this.player = this.physics.add.sprite(90*300,  98*300, 'MarcelIdle');
+            this.player = this.physics.add.sprite(90*300,  2*300, 'MarcelIdle');
+            //this.player = this.physics.add.sprite(90*300,  98*300, 'MarcelIdle');
             this.playerSpawnX = 90*300;
             this.playerSpawnY = 98*300;
             this.player.setGravityY(10000);
@@ -482,6 +482,13 @@ class sceneTest extends Phaser.Scene{
             }
             this.physics.add.collider(this.fired, this.chemineeGauche, fireAllume2, null, this);
 
+            function fireAllume3(cheminee, fire) {
+                fire.destroy();
+                this.scene.pause();
+                this.scene.launch('sceneB', {powerup : 3});
+            }
+            this.physics.add.collider(this.fired, this.chemineeFinale, fireAllume3, null, this);
+
             function allumeBoogie(fire, bougie) {
 
             if (bougie.health == 1) {
@@ -666,16 +673,25 @@ class sceneTest extends Phaser.Scene{
             this.flameJauge.setScrollFactor(0);
 
             this.pause = false;
+            this.intro = true;
         };
 
         update(time, delta){
             super.update(time, delta);
+
+            if (this.intro == true) {
+                this.intro = false;
+                this.scene.pause();
+                this.scene.launch('sceneB', {powerup : 0});
+            }
 
             //respawn
             if (this.pointCoeur <= 0) {
                 this.pointCoeur = 5;
                 this.player.x = this.playerSpawnX;
                 this.player.y = this.playerSpawnY;
+                this.scene.pause();
+                this.scene.launch('sceneB', {powerup : 4});
             }
 
             //CAMERA
@@ -1085,13 +1101,28 @@ class sceneB extends Phaser.Scene{
     }
 
 preload() {
-    this.load.spritesheet("animRoueFeu", "assets/BD/spritesheet rouedefeu.png", {frameWidth :600, frameHeight: 338});
-    this.load.spritesheet("animBouleFeu", "assets/BD/spritesheet boulefeu.png", {frameWidth :600, frameHeight: 338});
+    this.load.spritesheet("animRoueFeu", "assets/BD/spritesheet roue de feu.png", {frameWidth :600, frameHeight:338});
+    this.load.spritesheet("animBouleFeu", "assets/BD/spritesheet boule de feu.png", {frameWidth :600, frameHeight: 338});
+    this.load.spritesheet("animIntro", "assets/BD/spritesheet intro 2.png", {frameWidth :600, frameHeight: 338});
+    this.load.spritesheet("animDCD", "assets/BD/spritesheet dcd.png", {frameWidth :600, frameHeight: 338});
+    this.load.spritesheet("animVictoire", "assets/BD/spritesheet victoire.png", {frameWidth :600, frameHeight: 338});
 }
 create ()
 {
     //this.add.image(400, 300, 'face').setAlpha(0.5);
     this.cursors = this.input.keyboard.createCursorKeys();
+
+    if (this.powerup == 0) {
+    this.anims.create({
+                key: 'BD_intro',
+                frames: this.anims.generateFrameNumbers('animIntro', {start:0,end:104}),
+                frameRate: 12,
+                repeat: 0
+            });
+            this.BDintro = this.physics.add.sprite(640, 360, 'animIntro');
+            this.BDintro.anims.play('BD_intro', true);
+            this.BDintro.setScale(2.131);
+        }
 
     if (this.powerup == 1) {
     this.anims.create({
@@ -1101,9 +1132,9 @@ create ()
                 repeat: 0
             });
 
-    this.BDroue = this.physics.add.sprite(690, 360, 'animRoueFeu');
-    this.BDroue.anims.play('BD_rouefeu', true);
-    this.BDroue.setScale(2.13);
+            this.BDroue = this.physics.add.sprite(680, 340, 'animRoueFeu');
+            this.BDroue.anims.play('BD_rouefeu', true);
+            this.BDroue.setScale(2.131);
     }
 
     if (this.powerup == 2) {
@@ -1114,17 +1145,45 @@ create ()
                 repeat: 0
             });
 
-    this.BDboule = this.physics.add.sprite(690, 360, 'animBouleFeu');
-    this.BDboule.anims.play('BD_boulefeu', true);
-    this.BDboule.setScale(2.13);
+            this.BDboule = this.physics.add.sprite(640, 360, 'animBouleFeu');
+            this.BDboule.anims.play('BD_boulefeu', true);
+            this.BDboule.setScale(2.131);
     }
+
+    if (this.powerup == 3) {
+    this.anims.create({
+                key: 'BD_victoire',
+                frames: this.anims.generateFrameNumbers('animVictoire', {start:0,end:46}),
+                frameRate: 12,
+                repeat: 0
+            });
+            this.BDvictoire = this.physics.add.sprite(640, 360, 'animVictoire');
+            this.BDvictoire.anims.play('BD_victoire', true);
+            this.BDvictoire.setScale(2.131);
+        }
+
+    if (this.powerup == 4) {
+    this.anims.create({
+                key: 'BD_dcd',
+                frames: this.anims.generateFrameNumbers('animDCD', {start:0,end:46}),
+                frameRate: 12,
+                repeat: 0
+            });
+            this.BDdcd = this.physics.add.sprite(640, 360, 'animDCD');
+            this.BDdcd.anims.play('BD_dcd', true);
+            this.BDdcd.setScale(2.131);
+        }
 
     this.change = 0;
 }
 
 update () {
     this.change++;
-    if (this.change > 220) {this.scene.resume('sceneTest'); this.scene.stop();}
+    if (this.powerup == 0) {
+        if (this.change > 640) {this.scene.resume('sceneTest'); this.scene.stop();}
+    } else {
+        if (this.change > 220) {this.scene.resume('sceneTest'); this.scene.stop();}
+    }   
 
 }
 
