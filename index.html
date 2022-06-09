@@ -94,9 +94,20 @@ class sceneTest extends Phaser.Scene{
             //rickroll
             this.load.spritesheet('Rickroll_spritesheet', 'assets/rickroll spritesheet.png',
             { frameWidth: 498, frameHeight: 373 });
+
+            this.load.audio('sonRoue', 'assets/rouedefeuleson.wav');
+            this.load.audio('sonSaut', 'assets/sautleson.wav');
+            this.load.audio('musique', 'assets/chambord.wav');
+
         }
 
         create(){
+
+            this.son_feu = this.sound.add('sonRoue');
+            this.son_saut = this.sound.add('sonSaut');
+            this.son_musique = this.sound.add('musique', true);
+            this.son_musique.play();
+
 
             this.fond = this.add.image(3400, 1500, 'lefond');
             this.fond.setScrollFactor(0.1);
@@ -742,10 +753,12 @@ class sceneTest extends Phaser.Scene{
                 {   
                     if (this.player.body.blocked.down) {
                         this.player.setVelocityY(-3000);
+                        this.son_saut.play();
                     }
                     else if (this.doubleJump == true) {
                         this.player.setVelocityY(-3000);
                         this.doubleJump = false;
+                        this.son_saut.play();
                     }
                 } 
                 if (!this.player.body.blocked.down) {if ((this.grimpe == false) && (this.fireJump != 1)) {this.player.anims.play('MarcelJump', true);} else if (this.fireJump != 1) {this.player.anims.play('MarcelLeftRun', true);}}
@@ -803,6 +816,7 @@ class sceneTest extends Phaser.Scene{
                     this.player.anims.play({ key: 'MarcelAttak', startFrame: 0 }, true);
                     }
                     else if ((this.fireDash == true) && (this.player.body.velocity.x != 0) && (this.rouedefeu == true)) {
+                        this.son_feu.play();
                         if (this.player.body.velocity.x > 0 && !this.player.body.blocked.right) {
                             this.player.setVelocityX(4000);
                             this.fireDash = false;
@@ -845,8 +859,8 @@ class sceneTest extends Phaser.Scene{
                 }
             }
             else {
-                this.player.anims.play('RoueFeu', true);
                 this.player.setVelocityY(0);
+                this.player.anims.play('RoueFeu', true);
                 //dash de feu
                 if (this.timerAttack >= 20) {
                     this.attaquePlayer = false;
