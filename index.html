@@ -211,8 +211,8 @@ class sceneTest extends Phaser.Scene{
 
             this.playerPosition = 0;
 
-            this.player = this.physics.add.sprite(90*300,  2*300, 'MarcelIdle');
-            //this.player = this.physics.add.sprite(90*300,  98*300, 'MarcelIdle');
+            //this.player = this.physics.add.sprite(90*300,  2*300, 'MarcelIdle');
+            this.player = this.physics.add.sprite(90*300,  98*300, 'MarcelIdle');
             this.playerSpawnX = 90*300;
             this.playerSpawnY = 98*300;
             this.player.setGravityY(10000);
@@ -1132,7 +1132,7 @@ create ()
                 repeat: 0
             });
 
-            this.BDroue = this.physics.add.sprite(680, 340, 'animRoueFeu');
+            this.BDroue = this.physics.add.sprite(640, 360, 'animRoueFeu');
             this.BDroue.anims.play('BD_rouefeu', true);
             this.BDroue.setScale(2.131);
     }
@@ -1181,11 +1181,29 @@ update () {
     this.change++;
     if (this.powerup == 0) {
         if (this.change > 640) {this.scene.resume('sceneTest'); this.scene.stop();}
-    } else {
+    } else if (this.powerup == 3) {
+        if (this.change > 220) {this.scene.stop(); this.scene.launch('fin');}
+    }
+    else {
         if (this.change > 220) {this.scene.resume('sceneTest'); this.scene.stop();}
     }   
 
 }
+
+};
+
+class fin extends Phaser.Scene{
+    constructor(){
+        super('fin');
+    }
+
+    preload() {
+        this.load.image('ecranFin', 'assets/BD/ecran de fin.png');
+    }
+
+    create() {
+        this.physics.add.sprite(640, 360, 'ecranFin');
+    }
 
 };
 
@@ -1199,7 +1217,7 @@ var config = {
         }},
         pixelArt: true,
         roundPixels: true,
-        scene: [sceneTest, sceneB]
+        scene: [sceneTest, sceneB, fin]
         };
 
         new Phaser.Game(config);
