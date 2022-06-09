@@ -105,8 +105,9 @@ class sceneTest extends Phaser.Scene{
 
             this.son_feu = this.sound.add('sonRoue');
             this.son_saut = this.sound.add('sonSaut');
-            this.son_musique = this.sound.add('musique', true);
+            this.son_musique = this.sound.add('musique');
             this.son_musique.play();
+            this.son_musique.loop = true;
 
 
             this.fond = this.add.image(3400, 1500, 'lefond');
